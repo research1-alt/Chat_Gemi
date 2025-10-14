@@ -1,4 +1,4 @@
-
+// FIX: Added User interface to resolve an import error in UserManagementPanel.tsx.
 export interface User {
     email: string;
     // NOTE: In a real-world application, this should be a securely hashed password.

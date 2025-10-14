@@ -1,4 +1,4 @@
-import { Drawing, User } from '../types';
+import { Drawing } from '../types';
 
 interface KnowledgeBaseData {
     text: string;
@@ -6,9 +6,9 @@ interface KnowledgeBaseData {
 }
 
 const DB_NAME = 'ServiceAI-DB';
-const DB_VERSION = 2; // Incremented version for schema update
+const DB_VERSION = 2; 
 const KB_STORE_NAME = 'knowledgeBaseStore';
-const USER_STORE_NAME = 'userStore';
+const USER_STORE_NAME = 'userStore'; // Kept to avoid breaking upgrades for existing users, but no longer used.
 
 let db: IDBDatabase;
 
@@ -35,59 +35,13 @@ function openDB(): Promise<IDBDatabase> {
             if (!dbInstance.objectStoreNames.contains(KB_STORE_NAME)) {
                 dbInstance.createObjectStore(KB_STORE_NAME, { keyPath: 'id' });
             }
+            // Create user store if it doesn't exist for upgrade compatibility, but it won't be used.
             if (!dbInstance.objectStoreNames.contains(USER_STORE_NAME)) {
                 dbInstance.createObjectStore(USER_STORE_NAME, { keyPath: 'email' });
             }
         };
     });
 }
-
-// --- User Management Functions ---
-
-export async function getUser(email: string): Promise<User | null> {
-    const dbInstance = await openDB();
-    const transaction = dbInstance.transaction(USER_STORE_NAME, 'readonly');
-    const store = transaction.objectStore(USER_STORE_NAME);
-    return new Promise((resolve, reject) => {
-        const request = store.get(email);
-        request.onsuccess = () => resolve(request.result || null);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-export async function saveUser(user: User): Promise<void> {
-    const dbInstance = await openDB();
-    const transaction = dbInstance.transaction(USER_STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(USER_STORE_NAME);
-    return new Promise((resolve, reject) => {
-        const request = store.put(user);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
-
-export async function getAllUsers(): Promise<User[]> {
-    const dbInstance = await openDB();
-    const transaction = dbInstance.transaction(USER_STORE_NAME, 'readonly');
-    const store = transaction.objectStore(USER_STORE_NAME);
-    return new Promise((resolve, reject) => {
-        const request = store.getAll();
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-export async function deleteUser(email: string): Promise<void> {
-    const dbInstance = await openDB();
-    const transaction = dbInstance.transaction(USER_STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(USER_STORE_NAME);
-    return new Promise((resolve, reject) => {
-        const request = store.delete(email);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
-
 
 // --- Knowledge Base Functions ---
 

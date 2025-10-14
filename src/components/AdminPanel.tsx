@@ -8,9 +8,6 @@ import { UserManagementPanel } from './UserManagementPanel';
 import { UserGroupIcon } from './icons/UserGroupIcon';
 
 
-// FIX: Changed from `declare module` to `declare global` to augment the React
-// namespace directly. This resolves module augmentation errors that can occur in
-// certain TypeScript configurations where 'react' is not found as a module.
 declare global {
   namespace React {
     interface InputHTMLAttributes<T> {
@@ -26,7 +23,7 @@ interface AdminPanelProps {
   onDeleteUser: (email: string) => Promise<void>;
 }
 
-type AdminTab = 'kb' | 'users';
+type AdminTab = 'knowledge' | 'users';
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, users, onAddUser, onDeleteUser }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -34,9 +31,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
-  const [activeTab, setActiveTab] = useState<AdminTab>('kb');
   const [activeUploadTab, setActiveUploadTab] = useState('local');
   const [driveMessage, setDriveMessage] = useState('');
+  const [activeAdminTab, setActiveAdminTab] = useState<AdminTab>('knowledge');
 
   const supportedExtensions = ['.xlsx', '.xls', '.pptx', '.docx', '.pdf', '.txt', '.csv', '.md', '.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp'];
   const supportedFileTypesString = supportedExtensions.join(',');
@@ -44,7 +41,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement> | { target: { files: FileList | null } }) => {
     if (event.target.files) {
       const allFiles = Array.from(event.target.files);
-      // FIX: Add explicit File type to 'file' parameter to fix type inference issue.
       const supportedFiles = allFiles.filter((file: File) => 
           supportedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
       );
@@ -138,10 +134,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
     }
   };
   
-  const renderKBPanel = () => (
-    <>
+  const renderKnowledgeBasePanel = () => (
+    <div>
       <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-md" role="alert">
-        Your loaded knowledge base will be stored locally in your browser for future sessions. Use the 'Reset' button in the header to clear it.
+          Your loaded knowledge base will be stored locally in your browser for future sessions. Use the 'Reset' button in the header to clear it.
       </div>
       <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-6" aria-label="Tabs">
@@ -160,130 +156,129 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
           </nav>
       </div>
       <div className="mt-4">
-        {activeUploadTab === 'local' && (
-            <div>
-                <p className="text-sm text-gray-600 mb-2">
+          {activeUploadTab === 'local' && (
+              <div>
+                  <p className="text-sm text-gray-600 mb-2">
                   Upload files or a folder. Content from all supported files ({supportedExtensions.join(', ')}) will be combined.
-                </p>
-                <div 
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`w-full p-6 rounded-md flex flex-col items-center justify-center text-gray-500 transition border-2 border-dashed ${isDragging ? 'border-brand-primary' : (error ? 'border-red-500' : 'border-gray-300')}`}
-                >
-                    <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept={supportedFileTypesString}
-                    multiple
-                    />
-                    <input
-                    type="file"
-                    ref={folderInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    webkitdirectory=""
-                    multiple
-                    />
-                    {selectedFiles.length > 0 && !error ? (
-                    <div className="text-center p-2 w-full">
-                        <DocumentIcon className="h-8 w-8 mx-auto text-brand-primary" />
-                        <ul className="mt-2 text-sm text-left max-h-24 overflow-y-auto">
-                            {selectedFiles.map(file => (
-                                <li key={file.name} className="truncate" title={file.name}>
-                                    - {file.name} ({(file.size / 1024).toFixed(2)} KB)
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    ) : (
-                    <div className="text-center flex flex-col justify-center items-center pointer-events-none">
-                        <UploadIcon className="h-10 w-10 mx-auto text-gray-400" />
-                        <p className="mt-3 text-base text-gray-600">Drag & drop files or a folder here</p>
-                        <p className="my-2 text-sm text-gray-400">or</p>
-                        <div className="flex items-center space-x-4 pointer-events-auto">
-                            <button
-                                onClick={handleFileClick}
-                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                                Select Files
-                            </button>
-                            <button
-                                onClick={handleFolderClick}
-                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                                Select Folder
-                            </button>
-                        </div>
-                    </div>
-                    )}
-                </div>
-                {error && <pre className="text-red-600 text-sm mt-2 whitespace-pre-wrap font-sans">{error}</pre>}
-                <div className="mt-4">
-                    <button
-                        onClick={handleLoadData}
-                        disabled={selectedFiles.length === 0}
-                        className="w-full flex items-center justify-center bg-brand-primary text-white font-bold py-2 px-4 rounded-md hover:bg-blue-800 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    >
-                        Load Knowledge Base
-                    </button>
-                </div>
-            </div>
-        )}
-        {activeUploadTab === 'drive' && (
-            <div className="text-center py-8 px-4 flex flex-col items-center justify-center bg-gray-50 rounded-md">
-                <GoogleDriveIcon className="h-16 w-16 mx-auto" />
-                <h3 className="mt-4 text-lg font-semibold text-gray-800">Connect to Google Drive</h3>
-                <p className="mt-2 max-w-sm mx-auto text-sm text-gray-600">
+                  </p>
+                  <div 
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`w-full p-6 rounded-md flex flex-col items-center justify-center text-gray-500 transition border-2 border-dashed ${isDragging ? 'border-brand-primary' : (error ? 'border-red-500' : 'border-gray-300')}`}
+                  >
+                      <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept={supportedFileTypesString}
+                      multiple
+                      />
+                      <input
+                      type="file"
+                      ref={folderInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                      webkitdirectory=""
+                      multiple
+                      />
+                      {selectedFiles.length > 0 && !error ? (
+                      <div className="text-center p-2 w-full">
+                          <DocumentIcon className="h-8 w-8 mx-auto text-brand-primary" />
+                          <ul className="mt-2 text-sm text-left max-h-24 overflow-y-auto">
+                              {selectedFiles.map(file => (
+                                  <li key={file.name} className="truncate" title={file.name}>
+                                      - {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                                  </li>
+                              ))}
+                          </ul>
+                      </div>
+                      ) : (
+                      <div className="text-center flex flex-col justify-center items-center pointer-events-none">
+                          <UploadIcon className="h-10 w-10 mx-auto text-gray-400" />
+                          <p className="mt-3 text-base text-gray-600">Drag & drop files or a folder here</p>
+                          <p className="my-2 text-sm text-gray-400">or</p>
+                          <div className="flex items-center space-x-4 pointer-events-auto">
+                              <button
+                                  onClick={handleFileClick}
+                                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-50 transition-colors"
+                              >
+                                  Select Files
+                              </button>
+                              <button
+                                  onClick={handleFolderClick}
+                                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-50 transition-colors"
+                              >
+                                  Select Folder
+                              </button>
+                          </div>
+                      </div>
+                      )}
+                  </div>
+                  {error && <pre className="text-red-600 text-sm mt-2 whitespace-pre-wrap font-sans">{error}</pre>}
+                  <div className="mt-4">
+                      <button
+                          onClick={handleLoadData}
+                          disabled={selectedFiles.length === 0}
+                          className="w-full flex items-center justify-center bg-brand-primary text-white font-bold py-2 px-4 rounded-md hover:bg-blue-800 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      >
+                          Load Knowledge Base
+                      </button>
+                  </div>
+              </div>
+          )}
+          {activeUploadTab === 'drive' && (
+              <div className="text-center py-8 px-4 flex flex-col items-center justify-center bg-gray-50 rounded-md">
+                  <GoogleDriveIcon className="h-16 w-16 mx-auto" />
+                  <h3 className="mt-4 text-lg font-semibold text-gray-800">Connect to Google Drive</h3>
+                  <p className="mt-2 max-w-sm mx-auto text-sm text-gray-600">
                   Import files directly from your Google Drive account to build the knowledge base.
-                </p>
-                <div className="mt-6">
-                    <button
-                        onClick={() => setDriveMessage('This is a demonstration. A full Google Drive integration requires API credentials and a secure OAuth setup, which is not configured in this environment.')}
-                        className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                        <GoogleDriveIcon className="h-5 w-5" />
-                        <span>Connect to Google Drive</span>
-                    </button>
-                </div>
-                {driveMessage && (
-                    <div className="mt-4 text-sm text-center text-blue-800 bg-blue-100 p-3 rounded-md max-w-md mx-auto animate-fade-in-up">
-                        <p className="font-semibold">Feature Demo</p>
-                        <p>{driveMessage}</p>
-                    </div>
-                )}
-            </div>
-        )}
+                  </p>
+                  <div className="mt-6">
+                      <button
+                          onClick={() => setDriveMessage('This is a demonstration. A full Google Drive integration requires API credentials and a secure OAuth setup, which is not configured in this environment.')}
+                          className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-50 transition-colors"
+                      >
+                          <GoogleDriveIcon className="h-5 w-5" />
+                          <span>Connect to Google Drive</span>
+                      </button>
+                  </div>
+                  {driveMessage && (
+                      <div className="mt-4 text-sm text-center text-blue-800 bg-blue-100 p-3 rounded-md max-w-md mx-auto animate-fade-in-up">
+                          <p className="font-semibold">Feature Demo</p>
+                          <p>{driveMessage}</p>
+                      </div>
+                  )}
+              </div>
+          )}
       </div>
-    </>
+    </div>
   );
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 animate-fade-in-up w-full">
-        <div className="flex justify-between items-center pb-3 border-b border-gray-200">
-            <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-                <button
-                    onClick={() => setActiveTab('kb')}
-                    className={`flex items-center space-x-2 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none ${activeTab === 'kb' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                >
-                    <UploadIcon className="h-5 w-5"/>
-                    <span>Knowledge Base</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('users')}
-                    className={`flex items-center space-x-2 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none ${activeTab === 'users' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-                >
-                    <UserGroupIcon className="h-5 w-5"/>
-                    <span>User Management</span>
-                </button>
-            </nav>
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              <button
+                  onClick={() => setActiveAdminTab('knowledge')}
+                  className={`flex items-center space-x-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none ${activeAdminTab === 'knowledge' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              >
+                  <UploadIcon className="h-5 w-5"/>
+                  <span>Manage Knowledge Base</span>
+              </button>
+              <button
+                  onClick={() => setActiveAdminTab('users')}
+                  className={`flex items-center space-x-2 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none ${activeAdminTab === 'users' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              >
+                  <UserGroupIcon className="h-5 w-5"/>
+                  <span>Manage Users</span>
+              </button>
+          </nav>
         </div>
-
-        <div className="mt-4">
-            {activeTab === 'kb' && renderKBPanel()}
-            {activeTab === 'users' && <UserManagementPanel users={users} onAddUser={onAddUser} onDeleteUser={onDeleteUser}/>}
+        <div className="mt-6">
+            {activeAdminTab === 'knowledge' && renderKnowledgeBasePanel()}
+            {activeAdminTab === 'users' && <UserManagementPanel users={users} onAddUser={onAddUser} onDeleteUser={onDeleteUser} />}
         </div>
     </div>
   );

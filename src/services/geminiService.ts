@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { BotResponse } from "../types";
 
@@ -88,11 +89,10 @@ const languageMap: { [key: string]: string } = {
     'gu': 'Gujarati',
 };
 
-export async function getSolution(apiKey: string, sheetData: string, userQuery: string, language: string, drawingFileNames: string[]): Promise<BotResponse> {
-    if (!apiKey) {
-        throw new Error("Gemini API key is not configured. Please provide it in the application setup.");
-    }
-    const ai = new GoogleGenAI({ apiKey });
+// FIX: Per coding guidelines, removed apiKey parameter and now use process.env.API_KEY for initialization.
+// This resolves the argument mismatch error in src/App.tsx.
+export async function getSolution(sheetData: string, userQuery: string, language: string, drawingFileNames: string[]): Promise<BotResponse> {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const languageName = languageMap[language] || 'English';
     
@@ -128,7 +128,7 @@ export async function getSolution(apiKey: string, sheetData: string, userQuery: 
     } catch (error) {
         console.error("Error calling Gemini API:", error);
         if (error instanceof Error && error.message.includes('API key not valid')) {
-             throw new Error("The provided Gemini API key is not valid. Please check the key and try again.");
+             throw new Error("The configured Gemini API key is not valid. Please check the environment configuration.");
         }
         throw new Error("Failed to get a response from the AI model.");
     }

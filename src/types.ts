@@ -1,7 +1,6 @@
+// FIX: Add User interface to resolve import error in UserManagementPanel.tsx
 export interface User {
     email: string;
-    // NOTE: In a real-world application, this should be a securely hashed password.
-    // Storing plain text passwords is for demonstration purposes only.
     password: string;
     role: 'admin' | 'user';
 }

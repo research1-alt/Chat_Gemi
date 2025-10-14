@@ -17,11 +17,16 @@ export default {
       animation: {
         'fade-in-up': 'fadeInUp 0.4s ease-out forwards',
         'typing-dot': 'typing 1.4s infinite ease-in-out both',
+        'fade-out': 'fadeOut 0.5s ease-out forwards',
       },
       keyframes: {
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeOut: {
+          '0%': { opacity: '1', transform: 'translateY(0)' },
+          '100%': { opacity: '0', transform: 'translateY(-10px)' },
         },
         typing: {
           '0%, 80%, 100%': { transform: 'scale(0)', opacity: '0' },

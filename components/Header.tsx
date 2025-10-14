@@ -2,16 +2,10 @@ import React from 'react';
 import { WrenchScrewdriverIcon } from './icons/WrenchScrewdriverIcon';
 import { ResetIcon } from './icons/ResetIcon';
 import { LanguageIcon } from './icons/LanguageIcon';
-import { LoginIcon } from './icons/LoginIcon';
-import { LogoutIcon } from './icons/LogoutIcon';
 import { Cog6ToothIcon } from './icons/Cog6ToothIcon';
-import { User } from '../types';
 
 interface HeaderProps {
-    currentUser: User | null;
     onReset: () => void;
-    onLogout: () => void;
-    onLoginClick: () => void;
     isSheetLoaded: boolean;
     language: string;
     onLanguageChange: (language: string) => void;
@@ -19,9 +13,7 @@ interface HeaderProps {
     onViewToggle: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ currentUser, onReset, onLogout, onLoginClick, isSheetLoaded, language, onLanguageChange, view, onViewToggle }) => {
-  const isAdmin = currentUser?.role === 'admin';
-  
+export const Header: React.FC<HeaderProps> = ({ onReset, isSheetLoaded, language, onLanguageChange, view, onViewToggle }) => {
   return (
     <header className="bg-brand-primary text-white p-4 shadow-md flex items-center justify-between">
       <div className="flex items-center space-x-3">
@@ -47,51 +39,26 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onReset, onLogout, 
             </select>
         </div>
 
-        {currentUser ? (
-            <>
-                {isAdmin && (
-                    <>
-                        <button
-                            onClick={onViewToggle}
-                            aria-label={view === 'chat' ? "Manage Knowledge Base" : "Back to Chat"}
-                            title={view === 'chat' ? "Manage Knowledge Base" : "Back to Chat"}
-                            className="flex items-center space-x-2 px-3 py-2 rounded-md bg-brand-secondary hover:bg-blue-500 transition-colors"
-                        >
-                            <Cog6ToothIcon className="h-5 w-5" />
-                            <span className="text-sm font-semibold">{view === 'chat' ? "Admin Panel" : "Back to Chat"}</span>
-                        </button>
-                        <button
-                            onClick={onReset}
-                            aria-label="Reset Knowledge Base"
-                            title="Reset Knowledge Base"
-                            className="flex items-center space-x-2 px-3 py-2 rounded-md bg-yellow-500 hover:bg-yellow-600 transition-colors disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <ResetIcon className="h-5 w-5" />
-                            <span className="text-sm font-semibold">Reset</span>
-                        </button>
-                    </>
-                )}
-                <button
-                    onClick={onLogout}
-                    aria-label="Logout"
-                    title="Logout"
-                    className="flex items-center space-x-2 px-3 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors"
-                >
-                    <LogoutIcon className="h-5 w-5" />
-                    <span className="text-sm font-semibold">Logout</span>
-                </button>
-            </>
-        ) : (
-            <button
-                onClick={onLoginClick}
-                aria-label="Login"
-                title="Login"
-                className="flex items-center space-x-2 px-3 py-2 rounded-md bg-brand-secondary hover:bg-blue-500 transition-colors"
-            >
-                <LoginIcon className="h-5 w-5" />
-                <span className="text-sm font-semibold">Login</span>
-            </button>
-        )}
+        <button
+            onClick={onViewToggle}
+            aria-label={view === 'chat' ? "Manage Knowledge Base" : "Back to Chat"}
+            title={view === 'chat' ? "Manage Knowledge Base" : "Back to Chat"}
+            className="flex items-center space-x-2 px-3 py-2 rounded-md bg-brand-secondary hover:bg-blue-500 transition-colors"
+        >
+            <Cog6ToothIcon className="h-5 w-5" />
+            <span className="text-sm font-semibold">{view === 'chat' ? "Admin Panel" : "Back to Chat"}</span>
+        </button>
+        
+        <button
+            onClick={onReset}
+            disabled={!isSheetLoaded}
+            aria-label="Reset Knowledge Base"
+            title="Reset Knowledge Base"
+            className="flex items-center space-x-2 px-3 py-2 rounded-md bg-yellow-500 hover:bg-yellow-600 transition-colors disabled:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            <ResetIcon className="h-5 w-5" />
+            <span className="text-sm font-semibold">Reset</span>
+        </button>
       </div>
     </header>
   );
