@@ -1,5 +1,5 @@
 {
-  "name": "service-engineer-ai-assistant",
+  "name": "service-engineer-assistant",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,14 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react-dom": "18.2.0",
-    "@google/genai": "^1.22.0",
-    "react": "18.2.0",
-    "xlsx": "latest",
-    "jszip": "3.10.1",
-    "react-is": "18.2.0",
-    "mammoth": "1.7.2",
-    "pdfjs-dist": "4.4.168"
+    "react-dom": "^19.2.0",
+    "@google/genai": "^1.25.0",
+    "react": "^19.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

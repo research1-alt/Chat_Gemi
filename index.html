@@ -2,59 +2,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Service Engineer AI Assistant</title>
-    
-    <!-- PWA & SEO -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#00529B" />
-    <meta name="description" content="An intelligent chatbot that reads troubleshooting data from a provided sheet and offers step-by-step solutions for service engineers in the field. Admins can load a knowledge base, and engineers can query it using natural language." />
-    
-    <!-- Apple PWA -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Service AI" />
-    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
-    
-    <link rel="stylesheet" href="/src/index.css">
-<script type="importmap">
+    <title>Gemini Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- File Parsing Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      // Required for pdf.js to work
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script type="importmap">
 {
   "imports": {
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "xlsx": "https://aistudiocdn.com/xlsx@^0.18.5",
-    "jszip": "https://aistudiocdn.com/jszip@^3.10.1",
-    "mammoth": "https://aistudiocdn.com/mammoth@^1.11.0",
-    "pdfjs-dist": "https://aistudiocdn.com/pdfjs-dist@^5.4.296",
-    "path": "https://aistudiocdn.com/path@^0.12.7",
-    "vite": "https://aistudiocdn.com/vite@^7.1.10",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.4",
-    "url": "https://aistudiocdn.com/url@^0.11.4",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "pdfjs-dist/": "https://aistudiocdn.com/pdfjs-dist@^5.4.296/"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-gray-100">
+  <body class="bg-white">
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          // Explicitly construct the Service Worker URL from the current origin
-          // to prevent cross-origin registration errors in sandboxed environments.
-          const swUrl = new URL('/service-worker.js', window.location.origin).toString();
-          navigator.serviceWorker.register(swUrl).then(registration => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          }).catch(error => {
-            console.log('ServiceWorker registration failed: ', error);
-          });
-        });
-      }
-    </script>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>

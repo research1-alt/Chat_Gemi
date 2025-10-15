@@ -1,5 +1,5 @@
 {
-  "name": "Service Engineer AI Assistant",
+  "name": "Service Engineer Assistant",
   "description": "An intelligent chatbot that reads troubleshooting data from a provided sheet and offers step-by-step solutions for service engineers in the field. Admins can load a knowledge base, and engineers can query it using natural language.",
   "requestFramePermissions": [
     "microphone"
