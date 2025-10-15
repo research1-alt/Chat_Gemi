@@ -45,6 +45,27 @@ export default function App() {
 
   // --- Effects ---
 
+  const loadKnowledgeBaseData = useCallback(async () => {
+    try {
+        const kbData = await db.loadKnowledgeBase();
+        if (kbData && (kbData.text || kbData.drawings.length > 0)) {
+            setKnowledgeBaseText(kbData.text);
+            setDrawings(kbData.drawings);
+        } else {
+            const preloadedData = await loadPreloadedKnowledgeBase();
+            if (preloadedData) {
+                setKnowledgeBaseText(preloadedData.text);
+                setDrawings(preloadedData.drawings);
+                await db.saveKnowledgeBase(preloadedData.text, preloadedData.drawings);
+                setNotification({ message: 'Default knowledge base loaded.', type: 'success' });
+            }
+        }
+    } catch (error) {
+        console.error("Error loading knowledge base:", error);
+        setNotification({ message: 'Failed to load knowledge base.', type: 'error' });
+    }
+  }, []);
+
   const initializeApp = useCallback(async () => {
       try {
         const hasUsers = await db.hasUsers();
@@ -53,11 +74,15 @@ export default function App() {
           return;
         }
 
+        const allUsers = await db.getUsers();
+        setUsers(allUsers);
+
         const userEmail = sessionStorage.getItem('loggedInUserEmail');
         if (userEmail) {
             const user = await db.getUserByEmail(userEmail);
             if (user) {
                 setLoggedInUser(user);
+                await loadKnowledgeBaseData();
                 setAppStatus('ready');
             } else {
                 sessionStorage.removeItem('loggedInUserEmail');
@@ -66,31 +91,11 @@ export default function App() {
         } else {
             setAppStatus('login');
         }
-        
-        const allUsers = await db.getUsers();
-        setUsers(allUsers);
-
-        // Load Knowledge Base from the browser's database
-        const kbData = await db.loadKnowledgeBase();
-        if (kbData && (kbData.text || kbData.drawings.length > 0)) {
-            setKnowledgeBaseText(kbData.text);
-            setDrawings(kbData.drawings);
-        } else {
-            // If no KB in DB, try to load pre-configured data
-            const preloadedData = await loadPreloadedKnowledgeBase();
-            if (preloadedData) {
-                setKnowledgeBaseText(preloadedData.text);
-                setDrawings(preloadedData.drawings);
-                // Save the preloaded data to the DB for future sessions
-                await db.saveKnowledgeBase(preloadedData.text, preloadedData.drawings);
-                setNotification({ message: 'Default knowledge base loaded.', type: 'success' });
-            }
-        }
       } catch (error) {
         console.error("Initialization error:", error);
         setAppStatus('login'); // Fallback to login on error
       }
-    }, []);
+    }, [loadKnowledgeBaseData]);
 
 
   useEffect(() => {
@@ -129,8 +134,9 @@ export default function App() {
         await db.addUser(adminUser);
         setLoggedInUser(adminUser);
         sessionStorage.setItem('loggedInUserEmail', adminUser.email);
-        setAppStatus('ready');
         setUsers([adminUser]);
+        await loadKnowledgeBaseData();
+        setAppStatus('ready');
     } catch (e) {
         const error = e as Error;
         setAuthError(error.message);
@@ -143,6 +149,7 @@ export default function App() {
     if (user && user.password === pass) {
         setLoggedInUser(user);
         sessionStorage.setItem('loggedInUserEmail', user.email);
+        await loadKnowledgeBaseData();
         setAppStatus('ready');
     } else {
         setAuthError('Invalid email or password.');
