@@ -3,29 +3,29 @@ import { parseFile } from '../utils/fileParser';
 import { StoredFile } from '../utils/db';
 
 interface FileUploadProps {
-  onFileStored: (file: StoredFile) => void;
+  onFilesStored: (files: StoredFile[]) => void;
   onError: (message: string) => void;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onFileStored, onError }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ onFilesStored, onError }) => {
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const processAndStore = useCallback(async (file: File) => {
+  const processFile = useCallback(async (file: File): Promise<StoredFile | null> => {
     try {
         const content = await parseFile(file);
-        const fileToStore: StoredFile = {
+        return {
             name: file.name,
             content: content,
             size: file.size,
             lastModified: file.lastModified,
         };
-        onFileStored(fileToStore);
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         console.warn(`Skipping file ${file.name}: ${message}`);
         // Optionally, inform the user of skipped files via onError or a different mechanism.
+        return null;
     }
-  }, [onFileStored]);
+  }, []);
 
   const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -35,9 +35,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileStored, onError }) => {
     
     try {
         const fileList = Array.from(files);
-        for (const file of fileList) {
-            await processAndStore(file);
+        const storedFilePromises = fileList.map(processFile);
+        const results = await Promise.all(storedFilePromises);
+        const successfullyStoredFiles = results.filter((file): file is StoredFile => file !== null);
+        
+        if (successfullyStoredFiles.length > 0) {
+            onFilesStored(successfullyStoredFiles);
         }
+
     } catch (err) {
         const message = err instanceof Error ? err.message : "Could not process selected files.";
         onError(message);
@@ -46,7 +51,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileStored, onError }) => {
         // Reset file input value to allow re-uploading the same file/folder
         event.target.value = '';
     }
-  }, [processAndStore, onError]);
+  }, [processFile, onFilesStored, onError]);
   
   const processingText = isProcessing ? 'Processing...' : null;
 

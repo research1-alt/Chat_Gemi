@@ -21,7 +21,7 @@ const IntroPage: React.FC<IntroPageProps> = ({ onStart }) => {
         </p>
         <button
           onClick={onStart}
-          className="bg-green-600 text-white font-semibold py-3 px-8 rounded-md hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-all text-lg transform hover:scale-105"
+          className="bg-green-600 text-white font-semibold py-3 px-8 rounded-md hover:bg-green-700 transition-all text-lg transform hover:scale-105"
         >
           Get Started
         </button>

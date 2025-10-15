@@ -1,7 +1,7 @@
 import { StoredFile } from './utils/db';
 
 const matelEvContent = `
-# Matel EV Wiring and Troubleshooting Guide
+# EV Troubleshooting Guide
 
 This document is a comprehensive guide based on the official MATEL electric vehicle wiring diagrams and technical notes.
 
@@ -12,17 +12,18 @@ This document is a comprehensive guide based on the official MATEL electric vehi
 - MCU (Motor Control Unit)
 - 12V Aux Battery & 48V Main Battery System
 - Throttle & Brake Potentiometer
-- DC Convertor
-- Telematics, Cluster, Relays, and Fuses
+- DC-DC Convertor
+- Telematics, Cluster, Relays, and Fuses, ignition Switch,Emergency Switch
+-
 
 ### Wire Color Coding Legend:
-- **Aux Battery 12V:** Standard 12V positive line
+- Aux Battery 12V: Yellow/green (+ve), Black(-ve)
 - **DC 12V:** Converted 12V power
 - **48V:** Main 48V power line
-- **Ground:** System ground
+- **Ground:** System ground (Black)
 - **CAN High:** Yellow
 - **CAN Low:** Green
-- **Signals:** Orange
+- **Signals:**
 - **Cluster Delay:** Dedicated signal for cluster timing
 - **5V Supply:** Low voltage supply for sensors
 
@@ -140,7 +141,7 @@ This document is a comprehensive guide based on the official MATEL electric vehi
 
 export const matelEvKnowledgeBase: StoredFile[] = [
   {
-    name: 'MATEL-EV-Troubleshooting-Guide.md',
+    name: 'EV-Troubleshooting-Guide.md',
     content: matelEvContent,
     size: matelEvContent.length,
     lastModified: Date.now(),
