@@ -49,21 +49,20 @@ export default function App() {
     try {
         const kbData = await db.loadKnowledgeBase();
         if (kbData && (kbData.text || kbData.drawings.length > 0)) {
-            setKnowledgeBaseText(kbData.text);
-            setDrawings(kbData.drawings);
-        } else {
-            const preloadedData = await loadPreloadedKnowledgeBase();
-            if (preloadedData) {
-                setKnowledgeBaseText(preloadedData.text);
-                setDrawings(preloadedData.drawings);
-                await db.saveKnowledgeBase(preloadedData.text, preloadedData.drawings);
-                setNotification({ message: 'Default knowledge base loaded.', type: 'success' });
-            }
+            return kbData;
+        } 
+        
+        const preloadedData = await loadPreloadedKnowledgeBase();
+        if (preloadedData) {
+            await db.saveKnowledgeBase(preloadedData.text, preloadedData.drawings);
+            setNotification({ message: 'Default knowledge base loaded.', type: 'success' });
+            return preloadedData;
         }
     } catch (error) {
         console.error("Error loading knowledge base:", error);
         setNotification({ message: 'Failed to load knowledge base.', type: 'error' });
     }
+    return null;
   }, []);
 
   const initializeApp = useCallback(async () => {
@@ -82,7 +81,11 @@ export default function App() {
             const user = await db.getUserByEmail(userEmail);
             if (user) {
                 setLoggedInUser(user);
-                await loadKnowledgeBaseData();
+                const loadedKB = await loadKnowledgeBaseData();
+                if (loadedKB) {
+                    setKnowledgeBaseText(loadedKB.text);
+                    setDrawings(loadedKB.drawings);
+                }
                 setAppStatus('ready');
             } else {
                 sessionStorage.removeItem('loggedInUserEmail');
@@ -105,7 +108,7 @@ export default function App() {
   }, [appStatus, showLandingPage, initializeApp]);
 
   useEffect(() => {
-    if (isKnowledgeBaseLoaded && appStatus === 'ready') {
+    if (isKnowledgeBaseLoaded && appStatus === 'ready' && messages.length === 0) {
       const welcomeMessage: Message = {
           id: Date.now(),
           sender: 'bot',
@@ -120,10 +123,10 @@ export default function App() {
           }
       };
       setMessages([welcomeMessage]);
-    } else {
+    } else if (!isKnowledgeBaseLoaded) {
         setMessages([]);
     }
-  }, [isKnowledgeBaseLoaded, appStatus]);
+  }, [isKnowledgeBaseLoaded, appStatus, messages.length]);
 
 
   // --- App Handlers ---
@@ -135,7 +138,11 @@ export default function App() {
         setLoggedInUser(adminUser);
         sessionStorage.setItem('loggedInUserEmail', adminUser.email);
         setUsers([adminUser]);
-        await loadKnowledgeBaseData();
+        const loadedKB = await loadKnowledgeBaseData();
+        if (loadedKB) {
+            setKnowledgeBaseText(loadedKB.text);
+            setDrawings(loadedKB.drawings);
+        }
         setAppStatus('ready');
     } catch (e) {
         const error = e as Error;
@@ -149,7 +156,11 @@ export default function App() {
     if (user && user.password === pass) {
         setLoggedInUser(user);
         sessionStorage.setItem('loggedInUserEmail', user.email);
-        await loadKnowledgeBaseData();
+        const loadedKB = await loadKnowledgeBaseData();
+        if(loadedKB) {
+            setKnowledgeBaseText(loadedKB.text);
+            setDrawings(loadedKB.drawings);
+        }
         setAppStatus('ready');
     } else {
         setAuthError('Invalid email or password.');
@@ -235,7 +246,7 @@ export default function App() {
   };
   
   const handleReset = useCallback(async () => {
-    if(window.confirm("Are you sure you want to reset the knowledge base? This action cannot be undone.")){
+    if(window.confirm("Are you sure you want to reset the knowledge base? This action will clear all uploaded data and cannot be undone.")){
         setKnowledgeBaseText('');
         setDrawings([]);
         setAdminPanelKey(Date.now());
