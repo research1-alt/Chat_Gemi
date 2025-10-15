@@ -6,6 +6,8 @@ import { processTextFile, processImageFile } from '../services/fileParser';
 import { Drawing, User } from '../types';
 import { UserManagementPanel } from './UserManagementPanel';
 import { UserGroupIcon } from './icons/UserGroupIcon';
+import { ExportIcon } from './icons/ExportIcon';
+import JSZip from 'jszip';
 
 
 declare global {
@@ -21,11 +23,22 @@ interface AdminPanelProps {
   users: User[];
   onAddUser: (email: string, password: string) => Promise<string | null>;
   onDeleteUser: (email: string) => Promise<void>;
+  knowledgeBaseText: string;
+  drawings: Drawing[];
+  isKnowledgeBaseLoaded: boolean;
 }
 
 type AdminTab = 'knowledge' | 'users';
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, users, onAddUser, onDeleteUser }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ 
+    onKnowledgeBaseUpdate, 
+    users, 
+    onAddUser, 
+    onDeleteUser,
+    knowledgeBaseText,
+    drawings,
+    isKnowledgeBaseLoaded 
+}) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -38,9 +51,61 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
   const supportedExtensions = ['.xlsx', '.xls', '.pptx', '.docx', '.pdf', '.txt', '.csv', '.md', '.png', '.jpg', '.jpeg', '.svg', '.gif', '.webp'];
   const supportedFileTypesString = supportedExtensions.join(',');
 
+  const handleImportZip = async (zipFile: File) => {
+    try {
+      const zip = await JSZip.loadAsync(zipFile);
+      const manifestFile = zip.file("export-manifest.json");
+      if (!manifestFile) {
+          setError("Invalid knowledge base zip. 'export-manifest.json' is missing.");
+          return;
+      }
+      const manifest = JSON.parse(await manifestFile.async("string"));
+
+      const textFile = zip.file(manifest.textFile);
+      if (!textFile) {
+          setError("Invalid knowledge base zip. Text file specified in manifest is missing.");
+          return;
+      }
+      const text = await textFile.async("string");
+
+      const importedDrawings: Drawing[] = [];
+      if(manifest.drawingFiles && Array.isArray(manifest.drawingFiles)) {
+          for (const drawingName of manifest.drawingFiles) {
+              const drawingFile = zip.file(drawingName);
+              if (drawingFile) {
+                  const blob = await drawingFile.async("blob");
+                  const dataUrl = await new Promise<string>((resolve, reject) => {
+                      const reader = new FileReader();
+                      reader.onloadend = () => resolve(reader.result as string);
+                      reader.onerror = reject;
+                      reader.readAsDataURL(blob);
+                  });
+                  importedDrawings.push({ name: drawingName, dataUrl: dataUrl });
+              } else {
+                  console.warn(`Drawing file '${drawingName}' listed in manifest but not found in zip.`);
+              }
+          }
+      }
+      
+      onKnowledgeBaseUpdate({ text, drawings: importedDrawings });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      console.error("Error importing ZIP:", err);
+      setError(`Failed to import knowledge base. The file may be corrupt or in an invalid format. Error: ${errorMessage}`);
+    }
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement> | { target: { files: FileList | null } }) => {
     if (event.target.files) {
       const allFiles = Array.from(event.target.files);
+
+      if (allFiles.length === 1 && allFiles[0].name.toLowerCase().endsWith('.zip')) {
+          setSelectedFiles([]);
+          setError(null);
+          handleImportZip(allFiles[0]);
+          return;
+      }
+
       const supportedFiles = allFiles.filter((file: File) => 
           supportedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
       );
@@ -133,11 +198,44 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
         onKnowledgeBaseUpdate({ text: combinedData, drawings: loadedDrawings });
     }
   };
+
+  const handleExport = async () => {
+    try {
+        const zip = new JSZip();
+        
+        zip.file("knowledge_base.txt", knowledgeBaseText);
+
+        const manifest = {
+            textFile: "knowledge_base.txt",
+            drawingFiles: drawings.map(d => d.name)
+        };
+        zip.file("export-manifest.json", JSON.stringify(manifest, null, 2));
+
+        for (const drawing of drawings) {
+            const response = await fetch(drawing.dataUrl);
+            const blob = await response.blob();
+            zip.file(drawing.name, blob);
+        }
+
+        const content = await zip.generateAsync({ type: "blob" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(content);
+        link.download = "knowledge-base.zip";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+        console.error("Error exporting knowledge base:", err);
+        setError(`Failed to export knowledge base. Error: ${errorMessage}`);
+    }
+  };
   
   const renderKnowledgeBasePanel = () => (
     <div>
       <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-md" role="alert">
-          Your loaded knowledge base will be stored locally in your browser for future sessions. Use the 'Reset' button in the header to clear it.
+          Your loaded knowledge base is stored in your browser. Use 'Export' to save it for sharing, or 'Reset' in the header to clear it.
       </div>
       <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-6" aria-label="Tabs">
@@ -159,7 +257,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
           {activeUploadTab === 'local' && (
               <div>
                   <p className="text-sm text-gray-600 mb-2">
-                  Upload files or a folder. Content from all supported files ({supportedExtensions.join(', ')}) will be combined.
+                    Upload files, a folder, or import a previously exported <code>knowledge-base.zip</code>.
                   </p>
                   <div 
                       onDragOver={handleDragOver}
@@ -172,7 +270,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
                       ref={fileInputRef}
                       onChange={handleFileChange}
                       className="hidden"
-                      accept={supportedFileTypesString}
+                      accept={`${supportedFileTypesString},.zip`}
                       multiple
                       />
                       <input
@@ -197,7 +295,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
                       ) : (
                       <div className="text-center flex flex-col justify-center items-center pointer-events-none">
                           <UploadIcon className="h-10 w-10 mx-auto text-gray-400" />
-                          <p className="mt-3 text-base text-gray-600">Drag & drop files or a folder here</p>
+                          <p className="mt-3 text-base text-gray-600">Drag & drop files, a folder, or a <code>.zip</code> here</p>
                           <p className="my-2 text-sm text-gray-400">or</p>
                           <div className="flex items-center space-x-4 pointer-events-auto">
                               <button
@@ -217,13 +315,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ onKnowledgeBaseUpdate, u
                       )}
                   </div>
                   {error && <pre className="text-red-600 text-sm mt-2 whitespace-pre-wrap font-sans">{error}</pre>}
-                  <div className="mt-4">
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                       <button
                           onClick={handleLoadData}
                           disabled={selectedFiles.length === 0}
                           className="w-full flex items-center justify-center bg-brand-primary text-white font-bold py-2 px-4 rounded-md hover:bg-blue-800 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
                       >
-                          Load Knowledge Base
+                          Load from Files
+                      </button>
+                      <button
+                          onClick={handleExport}
+                          disabled={!isKnowledgeBaseLoaded}
+                          className="w-full flex items-center justify-center bg-gray-600 text-white font-bold py-2 px-4 rounded-md hover:bg-gray-700 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      >
+                          <ExportIcon className="h-5 w-5 mr-2" />
+                          Export Knowledge Base
                       </button>
                   </div>
               </div>

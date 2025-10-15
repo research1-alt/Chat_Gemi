@@ -11,6 +11,7 @@ import { WrenchScrewdriverIcon } from './components/icons/WrenchScrewdriverIcon'
 import { LoginPage } from './components/LoginPage';
 import { AdminSetupPage } from './components/AdminSetupPage';
 import { Notification } from './components/Notification';
+import { loadPreloadedKnowledgeBase } from './services/preloader';
 
 
 type AppStatus = 'loading' | 'setup' | 'login' | 'ready';
@@ -74,6 +75,16 @@ export default function App() {
         if (kbData && (kbData.text || kbData.drawings.length > 0)) {
             setKnowledgeBaseText(kbData.text);
             setDrawings(kbData.drawings);
+        } else {
+            // If no KB in DB, try to load pre-configured data
+            const preloadedData = await loadPreloadedKnowledgeBase();
+            if (preloadedData) {
+                setKnowledgeBaseText(preloadedData.text);
+                setDrawings(preloadedData.drawings);
+                // Save the preloaded data to the DB for future sessions
+                await db.saveKnowledgeBase(preloadedData.text, preloadedData.drawings);
+                setNotification({ message: 'Default knowledge base loaded.', type: 'success' });
+            }
         }
       } catch (error) {
         console.error("Initialization error:", error);
@@ -258,6 +269,9 @@ export default function App() {
                       users={users}
                       onAddUser={handleAddUser}
                       onDeleteUser={handleDeleteUser}
+                      knowledgeBaseText={knowledgeBaseText}
+                      drawings={drawings}
+                      isKnowledgeBaseLoaded={isKnowledgeBaseLoaded}
                   />
               </div>
           </div>
