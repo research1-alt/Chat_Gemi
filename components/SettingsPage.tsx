@@ -26,7 +26,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onError,
   isLoading,
 }) => {
-
   return (
     <div className="h-screen w-screen bg-white flex items-center justify-center font-sans text-gray-900 p-4">
       <div className="max-w-2xl w-full bg-gray-50 border-gray-200 border rounded-lg p-8 shadow-2xl flex flex-col gap-8">
@@ -37,7 +36,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         
         {/* --- Language Section --- */}
         <div className="border-t border-gray-200 pt-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">1. Language</h2>
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Language</h2>
             <div className="relative max-w-xs">
                 <select
                     value={currentLanguage}
@@ -57,14 +56,17 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
         {/* --- Knowledge Base Section --- */}
         <div className="border-t border-gray-200 pt-6">
-             <h2 className="text-lg font-semibold text-gray-800 mb-3">2. Add Knowledge Base</h2>
-             <p className="text-sm text-gray-600 mb-4">Use the "Upload File" or "Upload Folder" option to provide context.</p>
+             <h2 className="text-lg font-semibold text-gray-800 mb-3">Add Knowledge Base</h2>
+             <p className="text-sm text-gray-600 mb-4">Use the "Upload File" or "Upload Folder" option to provide context from your technical documents.</p>
              <FileUpload 
                 onFileProcessed={onFileProcessed} 
                 onFileCleared={onFileCleared}
                 onError={onError}
                 disabled={isLoading} 
              />
+             <p className="text-xs text-gray-500 mt-2">
+                Supported formats: .pdf, .docx, .xlsx, .pptx, .txt, and .zip archives. Note: .rar and .7z are not supported.
+             </p>
         </div>
         
         <div className="border-t border-gray-200 pt-6 flex justify-between items-center">

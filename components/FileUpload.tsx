@@ -1,12 +1,6 @@
+
 import React, { useState, useCallback } from 'react';
 import { parseFile } from '../utils/fileParser';
-
-// Extend the InputHTMLAttributes to include the non-standard `webkitdirectory` attribute
-declare module 'react' {
-  interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
-    webkitdirectory?: string;
-  }
-}
 
 interface FileUploadProps {
   onFileProcessed: (fileName: string, content: string) => void;
@@ -37,15 +31,19 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed, onFileCleared,
                     const content = await parseFile(file);
                     combinedContent += `\n\n--- Content from ${file.name} ---\n${content}`;
                 } catch (err) {
-                    console.warn(`Skipping file ${file.name}: ${(err as Error).message}`);
+                    // FIX: Made error handling type-safe. The 'err' object is of type 'unknown', so we check if it's an Error instance before accessing properties.
+                    const message = err instanceof Error ? err.message : String(err);
+                    console.warn(`Skipping file ${file.name}: ${message}`);
                 }
             }
             if (!combinedContent) {
                 throw new Error("No readable files found in the selected folder.");
             }
             onFileProcessed(folderName, combinedContent.trim());
-        } catch (err: any) {
-            onError(err.message || "Could not read the selected folder.");
+        } catch (err) {
+            // FIX: Made error handling type-safe. The 'err' object is of type 'unknown', so we check if it's an Error instance before accessing properties.
+            const message = err instanceof Error ? err.message : "Could not read the selected folder.";
+            onError(message);
             setSelectionName(null);
         }
     } else { // Single file upload
@@ -54,8 +52,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed, onFileCleared,
         try {
             const content = await parseFile(file);
             onFileProcessed(file.name, content);
-        } catch (err: any) {
-            onError(err.message || "Could not read the selected file.");
+        } catch (err) {
+            // FIX: Made error handling type-safe. The 'err' object is of type 'unknown', so we check if it's an Error instance before accessing properties.
+            const message = err instanceof Error ? err.message : "Could not read the selected file.";
+            onError(message);
             setSelectionName(null);
         }
     }
@@ -84,7 +84,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileProcessed, onFileCleared,
              <label htmlFor="folder-upload" className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${disabled || isProcessing ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
                 {processingText || 'Upload Folder'}
              </label>
-             <input id="folder-upload" type="file" className="hidden" onChange={handleFileChange} webkitdirectory="" disabled={disabled || isProcessing}/>
+             {/* Use spread attributes for non-standard properties to avoid module augmentation issues. */}
+             <input id="folder-upload" type="file" className="hidden" onChange={handleFileChange} {...{webkitdirectory: ""}} disabled={disabled || isProcessing}/>
         </div>
       )}
       

@@ -57,25 +57,42 @@ async function parsePptx(file: File): Promise<string> {
 }
 
 async function parseZip(file: File): Promise<string> {
-    const zip = await JSZip.loadAsync(file);
+    const zip = await JSZip.loadAsync(file, { password: 'Arvind@1223' });
     let combinedText = '';
-    const textFilePromises: Promise<void>[] = [];
+    const contentPromises: Promise<string>[] = [];
 
     zip.forEach((relativePath, zipEntry) => {
-        // A simple check for text-based files, can be expanded
-        if (!zipEntry.dir && /\.(txt|json|xml|html|css|js|md|csv)$/i.test(zipEntry.name)) {
-            const promise = zipEntry.async('string').then(content => {
-                combinedText += `--- Content from ${zipEntry.name} ---\n${content}\n\n`;
-            }).catch(err => {
-                console.warn(`Could not read ${zipEntry.name} from zip as text.`, err);
-            });
-            textFilePromises.push(promise);
+        if (!zipEntry.dir) {
+            const promise = async () => {
+                try {
+                    const blob = await zipEntry.async('blob');
+                    const nestedFile = new File([blob], zipEntry.name, { type: blob.type });
+                    
+                    const extension = nestedFile.name.split('.').pop()?.toLowerCase();
+                    if (extension === 'zip') {
+                        // To prevent infinite recursion, we'll just warn and skip nested zips.
+                        console.warn(`Skipping nested zip file: ${nestedFile.name}`);
+                        return '';
+                    }
+
+                    // We recursively call parseFile for each file in the zip
+                    const content = await parseFile(nestedFile);
+                    return `--- Content from ${zipEntry.name} ---\n${content}\n\n`;
+                } catch (err) {
+                    // Log a warning for files that couldn't be parsed and continue with others.
+                    console.warn(`Could not parse file "${zipEntry.name}" within the zip archive: ${(err as Error).message}`);
+                    return ''; // Return empty string so Promise.all doesn't fail.
+                }
+            };
+            contentPromises.push(promise());
         }
     });
 
-    await Promise.all(textFilePromises);
+    const allContents = await Promise.all(contentPromises);
+    combinedText = allContents.join('').trim();
+
     if (!combinedText) {
-        throw new Error("No readable text-based files found in the ZIP archive.");
+        throw new Error("No readable or supported files found in the ZIP archive, or the password may be incorrect.");
     }
     return combinedText;
 }
@@ -110,6 +127,10 @@ export const parseFile = async (file: File): Promise<string> => {
             return parsePptx(file);
         case 'zip':
             return parseZip(file);
+        case 'rar':
+            throw new Error('WinRAR archives (.rar) are not supported. Please use a standard ZIP (.zip) file instead.');
+        case '7z':
+            throw new Error('7-Zip archives (.7z) are not supported. Please use a standard ZIP (.zip) file instead.');
         default:
             // Fallback for unknown extensions: try to read as text.
             try {
