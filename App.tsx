@@ -4,6 +4,7 @@ import SettingsPage from './components/SettingsPage';
 import IntroPage from './components/IntroPage';
 import { ChatMessage } from './types';
 import { getChatbotResponse } from './services/geminiService';
+import { getFile } from './utils/db'; // Import IndexedDB utility
 
 const languageOptions = {
     'en-US': 'English',
@@ -14,8 +15,13 @@ const languageOptions = {
     'gu-IN': 'Gujarati (ગુજરાતી)',
 };
 
+interface ActiveFile {
+  name: string;
+  content: string;
+}
+
 const App: React.FC = () => {
-  // --- State Initialization with Session & Local Storage ---
+  // --- State Initialization ---
   const [view, setView] = useState<'intro' | 'settings' | 'chat'>(() => {
     const savedView = sessionStorage.getItem('app-view');
     return savedView ? JSON.parse(savedView) : 'intro';
@@ -25,35 +31,54 @@ const App: React.FC = () => {
     return savedMessages ? JSON.parse(savedMessages) : [];
   });
   const [isLoading, setIsLoading] = useState(false);
-  // Use localStorage for knowledge base persistence across sessions
-  const [fileContent, setFileContent] = useState<string | null>(() => localStorage.getItem('app-fileContent'));
-  const [fileName, setFileName] = useState<string | null>(() => localStorage.getItem('app-fileName'));
+  const [activeFile, setActiveFile] = useState<ActiveFile | null>(null);
   const [language, setLanguage] = useState(() => {
     const savedLang = sessionStorage.getItem('app-language');
     return savedLang ? JSON.parse(savedLang) : 'en-US';
   });
 
+  // --- Effect to load active file from permanent storage on startup ---
+  useEffect(() => {
+    const loadActiveFile = async () => {
+        const activeFileName = localStorage.getItem('app-activeFileName');
+        if (activeFileName) {
+            try {
+                const file = await getFile(activeFileName);
+                if (file) {
+                    setActiveFile({ name: file.name, content: file.content });
+                } else {
+                    // The file was deleted from another tab, so clear the active reference
+                    localStorage.removeItem('app-activeFileName');
+                }
+            } catch (error) {
+                console.error("Failed to load active file from DB:", error);
+            }
+        }
+    };
+    loadActiveFile();
+  }, []);
+
   // --- Effect to Persist State ---
   useEffect(() => {
-    // Persist session-specific state
     sessionStorage.setItem('app-view', JSON.stringify(view));
     sessionStorage.setItem('app-messages', JSON.stringify(messages));
     sessionStorage.setItem('app-language', JSON.stringify(language));
 
-    // Persist knowledge base state across sessions
-    if (fileName) localStorage.setItem('app-fileName', fileName);
-    else localStorage.removeItem('app-fileName');
-    if (fileContent) localStorage.setItem('app-fileContent', fileContent);
-    else localStorage.removeItem('app-fileContent');
-  }, [view, messages, language, fileName, fileContent]);
+    // Persist the *name* of the active file to localStorage for cross-session recall
+    if (activeFile) {
+        localStorage.setItem('app-activeFileName', activeFile.name);
+    } else {
+        localStorage.removeItem('app-activeFileName');
+    }
+  }, [view, messages, language, activeFile]);
 
 
   const startChatSession = () => {
     if (messages.length === 0 || messages.every(m => m.id.startsWith('system-'))) {
         setMessages([{
             id: 'initial-bot-message',
-            text: fileName 
-                ? `Knowledge base "${fileName}" is loaded. How can I assist you with the provided documents?`
+            text: activeFile?.name 
+                ? `Knowledge base "${activeFile.name}" is loaded. How can I assist you with the provided documents?`
                 : "Welcome to the Field Service Assistant. You can now ask questions.",
             sender: 'bot'
         }]);
@@ -61,14 +86,12 @@ const App: React.FC = () => {
     setView('chat');
   };
 
-  const handleFileProcessed = useCallback((name: string, content: string) => {
-    setFileContent(content);
-    setFileName(name);
+  const handleFileLoad = useCallback((file: ActiveFile) => {
+    setActiveFile(file);
   }, []);
   
-  const handleFileCleared = useCallback(() => {
-    setFileContent(null);
-    setFileName(null);
+  const handleFileClear = useCallback(() => {
+    setActiveFile(null);
   }, []);
 
   const handleFileError = useCallback((errorMessage: string) => {
@@ -76,9 +99,10 @@ const App: React.FC = () => {
     const errorBotMessage: ChatMessage = {
       id: `system-error-${Date.now()}`,
       sender: 'bot',
-      text: `An error occurred while processing your file: ${errorMessage}`,
+      text: `An error occurred: ${errorMessage}`,
     };
     setMessages(prev => [...prev, errorBotMessage]);
+    setView('chat'); // Show error in chat window
   }, []);
 
   const handleSendMessage = useCallback(async (messageText: string, lang: string) => {
@@ -92,7 +116,7 @@ const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { text: botResponseText, suggestions } = await getChatbotResponse(messageText, messages, fileContent, lang);
+      const { text: botResponseText, suggestions } = await getChatbotResponse(messageText, messages, activeFile?.content ?? null, lang);
       const newBotMessage: ChatMessage = {
         id: `bot-${Date.now()}`,
         text: botResponseText,
@@ -111,7 +135,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [messages, fileContent]);
+  }, [messages, activeFile]);
   
   const handleSuggestionClick = useCallback((suggestionText: string, messageId: string) => {
     setMessages(prevMessages =>
@@ -149,11 +173,10 @@ const App: React.FC = () => {
             languageOptions={languageOptions}
             currentLanguage={language}
             onLanguageChange={handleLanguageChange}
-            currentFileName={fileName}
-            onFileProcessed={handleFileProcessed}
-            onFileCleared={handleFileCleared}
+            activeFile={activeFile}
+            onFileLoad={handleFileLoad}
+            onFileClear={handleFileClear}
             onError={handleFileError}
-            isLoading={isLoading}
         />
     );
   }
@@ -164,7 +187,7 @@ const App: React.FC = () => {
         <h1 className="text-xl font-bold text-gray-800">Service Engineer Assistant</h1>
         <div className="flex items-center gap-4">
             <div className="flex items-center gap-4 text-sm text-gray-600">
-                {fileName && <span className="max-w-xs truncate" title={fileName}>Knowledge Base: {fileName}</span>}
+                {activeFile && <span className="max-w-xs truncate" title={activeFile.name}>Knowledge Base: {activeFile.name}</span>}
                 <span>Language: {languageOptions[language]}</span>
             </div>
             <button

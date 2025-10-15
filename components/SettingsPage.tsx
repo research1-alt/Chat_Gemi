@@ -1,5 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import FileUpload from './FileUpload';
+import { StoredFile, getAllFiles, addFile, deleteFile, addFiles } from '../utils/db';
+import { defaultLibraryFiles } from '../defaultLibrary';
+
+interface ActiveFile {
+  name: string;
+  content: string;
+}
 
 interface SettingsPageProps {
   onProceed: () => void;
@@ -7,12 +14,22 @@ interface SettingsPageProps {
   languageOptions: { [key: string]: string };
   currentLanguage: string;
   onLanguageChange: (lang: string) => void;
-  currentFileName: string | null;
-  onFileProcessed: (fileName: string, content: string) => void;
-  onFileCleared: () => void;
+  activeFile: ActiveFile | null;
+  onFileLoad: (file: ActiveFile) => void;
+  onFileClear: () => void;
   onError: (message: string) => void;
-  isLoading: boolean;
 }
+
+// Helper function to format file sizes
+const formatBytes = (bytes: number, decimals = 2): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 
 const SettingsPage: React.FC<SettingsPageProps> = ({
   onProceed,
@@ -20,15 +37,73 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   languageOptions,
   currentLanguage,
   onLanguageChange,
-  currentFileName,
-  onFileProcessed,
-  onFileCleared,
+  activeFile,
+  onFileLoad,
+  onFileClear,
   onError,
-  isLoading,
 }) => {
+    const [library, setLibrary] = useState<StoredFile[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isDefaultLoading, setIsDefaultLoading] = useState(false);
+
+    const refreshLibrary = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const files = await getAllFiles();
+            setLibrary(files);
+        } catch (err) {
+            onError(err instanceof Error ? err.message : 'Could not load knowledge base library.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [onError]);
+
+    useEffect(() => {
+        refreshLibrary();
+    }, [refreshLibrary]);
+
+    const handleFileStore = useCallback(async (fileToStore: StoredFile) => {
+        try {
+            await addFile(fileToStore);
+            await refreshLibrary();
+        } catch (err) {
+            onError(err instanceof Error ? err.message : 'Could not save file to the library.');
+        }
+    }, [onError, refreshLibrary]);
+
+    const handleDelete = useCallback(async (fileName: string) => {
+        if (window.confirm(`Are you sure you want to permanently delete "${fileName}"?`)) {
+            try {
+                await deleteFile(fileName);
+                if (activeFile?.name === fileName) {
+                    onFileClear();
+                }
+                await refreshLibrary();
+            } catch (err) {
+                onError(err instanceof Error ? err.message : `Could not delete file: ${fileName}.`);
+            }
+        }
+    }, [activeFile, onFileClear, onError, refreshLibrary]);
+
+    const handleLoad = (file: StoredFile) => {
+        onFileLoad({name: file.name, content: file.content});
+    }
+
+    const handleLoadDefaultLibrary = useCallback(async () => {
+        setIsDefaultLoading(true);
+        try {
+            await addFiles(defaultLibraryFiles);
+            await refreshLibrary();
+        } catch (err) {
+            onError(err instanceof Error ? err.message : 'Could not load the default library.');
+        } finally {
+            setIsDefaultLoading(false);
+        }
+    }, [onError, refreshLibrary]);
+
   return (
     <div className="h-screen w-screen bg-white flex items-center justify-center font-sans text-gray-900 p-4">
-      <div className="max-w-2xl w-full bg-gray-50 border-gray-200 border rounded-lg p-8 shadow-2xl flex flex-col gap-8">
+      <div className="max-w-3xl w-full bg-gray-50 border-gray-200 border rounded-lg p-8 shadow-2xl flex flex-col gap-8">
         <div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Session Setup</h1>
             <p className="text-gray-600">Configure your session before starting the chat.</p>
@@ -56,17 +131,61 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
         {/* --- Knowledge Base Section --- */}
         <div className="border-t border-gray-200 pt-6">
-             <h2 className="text-lg font-semibold text-gray-800 mb-3">Add Knowledge Base</h2>
-             <p className="text-sm text-gray-600 mb-4">Use the "Upload File" or "Upload Folder" option to provide context from your technical documents.</p>
-             <FileUpload 
-                onFileProcessed={onFileProcessed} 
-                onFileCleared={onFileCleared}
-                onError={onError}
-                disabled={isLoading} 
-             />
-             <p className="text-xs text-gray-500 mt-2">
-                Supported formats: .pdf, .docx, .xlsx, .pptx, .txt, and .zip archives. Note: .rar and .7z are not supported.
-             </p>
+             <div className="flex justify-between items-center mb-4">
+                <div>
+                    <h2 className="text-lg font-semibold text-gray-800">Knowledge Base Library</h2>
+                    <p className="text-sm text-gray-600">Upload files/folders to your permanent library. Then, load one to use it in your chat session.</p>
+                </div>
+                <FileUpload onFileStored={handleFileStore} onError={onError} />
+             </div>
+
+             <div className="bg-white border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+                <table className="w-full text-sm text-left text-gray-600">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-4 py-2 w-1/2">File Name</th>
+                            <th scope="col" className="px-4 py-2">Size</th>
+                            <th scope="col" className="px-4 py-2">Last Modified</th>
+                            <th scope="col" className="px-4 py-2 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {isLoading ? (
+                            <tr><td colSpan={4} className="text-center p-4">Loading Library...</td></tr>
+                        ) : library.length === 0 ? (
+                            <tr>
+                                <td colSpan={4} className="text-center p-8">
+                                    <h3 className="font-semibold text-gray-700">Your library is empty.</h3>
+                                    <p className="text-gray-500 mt-1 mb-4">Upload your own files or load the sample knowledge base to get started.</p>
+                                    <button
+                                        onClick={handleLoadDefaultLibrary}
+                                        disabled={isDefaultLoading}
+                                        className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-wait"
+                                    >
+                                        {isDefaultLoading ? 'Loading...' : 'Load Sample Knowledge Base'}
+                                    </button>
+                                </td>
+                            </tr>
+                        ) : (
+                           library.map((file) => (
+                                <tr key={file.name} className={`border-b border-gray-200 ${activeFile?.name === file.name ? 'bg-green-50' : 'hover:bg-gray-50'}`}>
+                                    <td className="px-4 py-2 font-medium text-gray-900 truncate max-w-xs" title={file.name}>{file.name}</td>
+                                    <td className="px-4 py-2">{formatBytes(file.size)}</td>
+                                    <td className="px-4 py-2">{new Date(file.lastModified).toLocaleDateString()}</td>
+                                    <td className="px-4 py-2 text-right space-x-2">
+                                        {activeFile?.name === file.name ? (
+                                            <span className="px-2 py-1 text-xs font-semibold text-green-800 bg-green-200 rounded-full">Loaded</span>
+                                        ) : (
+                                            <button onClick={() => handleLoad(file)} className="font-medium text-green-600 hover:underline">Load</button>
+                                        )}
+                                        <button onClick={() => handleDelete(file.name)} className="font-medium text-red-600 hover:underline">Delete</button>
+                                    </td>
+                                </tr>
+                           ))
+                        )}
+                    </tbody>
+                </table>
+             </div>
         </div>
         
         <div className="border-t border-gray-200 pt-6 flex justify-between items-center">
