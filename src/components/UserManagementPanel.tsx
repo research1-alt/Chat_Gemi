@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { User } from '../types';
 import { UserGroupIcon } from './icons/UserGroupIcon';
 import { UserIcon } from './icons/UserIcon';
-import { LockClosedIcon } from './icons/LockClosedIcon';
 
 interface UserManagementPanelProps {
   users: User[];

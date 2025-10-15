@@ -14,13 +14,12 @@ import { Notification } from './components/Notification';
 import { loadPreloadedKnowledgeBase } from './services/preloader';
 
 
-type AppStatus = 'loading' | 'setup' | 'login' | 'ready';
+type AppStatus = 'loading' | 'landing' | 'setup' | 'login' | 'ready';
 const ADMIN_EMAIL = 'admin@service.app';
 
 export default function App() {
   // App State
-  const [appStatus, setAppStatus] = useState<AppStatus>('loading');
-  const [showLandingPage, setShowLandingPage] = useState<boolean>(true);
+  const [appStatus, setAppStatus] = useState<AppStatus>('landing');
   
   // Auth State
   const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
@@ -38,34 +37,34 @@ export default function App() {
 
   // UI State
   const [view, setView] = useState<'chat' | 'admin'>('chat');
-  const [adminPanelKey, setAdminPanelKey] = useState(Date.now());
   const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const isKnowledgeBaseLoaded = knowledgeBaseText.trim().length > 0 || drawings.length > 0;
 
-  // --- Effects ---
-
-  const loadKnowledgeBaseData = useCallback(async () => {
+  const loadKnowledgeBaseAndSetState = useCallback(async () => {
     try {
         const kbData = await db.loadKnowledgeBase();
         if (kbData && (kbData.text || kbData.drawings.length > 0)) {
-            return kbData;
+            setKnowledgeBaseText(kbData.text);
+            setDrawings(kbData.drawings);
+            return;
         } 
         
         const preloadedData = await loadPreloadedKnowledgeBase();
         if (preloadedData) {
             await db.saveKnowledgeBase(preloadedData.text, preloadedData.drawings);
+            setKnowledgeBaseText(preloadedData.text);
+            setDrawings(preloadedData.drawings);
             setNotification({ message: 'Default knowledge base loaded.', type: 'success' });
-            return preloadedData;
         }
     } catch (error) {
         console.error("Error loading knowledge base:", error);
         setNotification({ message: 'Failed to load knowledge base.', type: 'error' });
     }
-    return null;
   }, []);
 
   const initializeApp = useCallback(async () => {
+      setAppStatus('loading');
       try {
         const hasUsers = await db.hasUsers();
         if (!hasUsers) {
@@ -81,11 +80,7 @@ export default function App() {
             const user = await db.getUserByEmail(userEmail);
             if (user) {
                 setLoggedInUser(user);
-                const loadedKB = await loadKnowledgeBaseData();
-                if (loadedKB) {
-                    setKnowledgeBaseText(loadedKB.text);
-                    setDrawings(loadedKB.drawings);
-                }
+                await loadKnowledgeBaseAndSetState();
                 setAppStatus('ready');
             } else {
                 sessionStorage.removeItem('loggedInUserEmail');
@@ -98,14 +93,8 @@ export default function App() {
         console.error("Initialization error:", error);
         setAppStatus('login'); // Fallback to login on error
       }
-    }, [loadKnowledgeBaseData]);
+    }, [loadKnowledgeBaseAndSetState]);
 
-
-  useEffect(() => {
-    if (appStatus === 'loading' && !showLandingPage) {
-        initializeApp();
-    }
-  }, [appStatus, showLandingPage, initializeApp]);
 
   useEffect(() => {
     if (isKnowledgeBaseLoaded && appStatus === 'ready' && messages.length === 0) {
@@ -123,14 +112,11 @@ export default function App() {
           }
       };
       setMessages([welcomeMessage]);
-    } else if (!isKnowledgeBaseLoaded) {
+    } else if (!isKnowledgeBaseLoaded && appStatus === 'ready') {
         setMessages([]);
     }
   }, [isKnowledgeBaseLoaded, appStatus, messages.length]);
 
-
-  // --- App Handlers ---
-  
   const handleAdminSetup = async (password: string) => {
     try {
         const adminUser: User = { email: ADMIN_EMAIL, password, role: 'admin' };
@@ -138,11 +124,7 @@ export default function App() {
         setLoggedInUser(adminUser);
         sessionStorage.setItem('loggedInUserEmail', adminUser.email);
         setUsers([adminUser]);
-        const loadedKB = await loadKnowledgeBaseData();
-        if (loadedKB) {
-            setKnowledgeBaseText(loadedKB.text);
-            setDrawings(loadedKB.drawings);
-        }
+        await loadKnowledgeBaseAndSetState();
         setAppStatus('ready');
     } catch (e) {
         const error = e as Error;
@@ -152,15 +134,11 @@ export default function App() {
 
   const handleLogin = async (email: string, pass: string) => {
     setAuthError(null);
-    const user = await db.getUserByEmail(email);
+    const user = await db.getUserByEmail(email.toLowerCase());
     if (user && user.password === pass) {
         setLoggedInUser(user);
         sessionStorage.setItem('loggedInUserEmail', user.email);
-        const loadedKB = await loadKnowledgeBaseData();
-        if(loadedKB) {
-            setKnowledgeBaseText(loadedKB.text);
-            setDrawings(loadedKB.drawings);
-        }
+        await loadKnowledgeBaseAndSetState();
         setAppStatus('ready');
     } else {
         setAuthError('Invalid email or password.');
@@ -171,15 +149,19 @@ export default function App() {
       setLoggedInUser(null);
       sessionStorage.removeItem('loggedInUserEmail');
       setView('chat');
+      setKnowledgeBaseText('');
+      setDrawings([]);
+      setMessages([]);
       setAppStatus('login');
   };
 
   const handleAddUser = async (email: string, password: string): Promise<string | null> => {
       try {
-          const newUser: User = { email, password, role: 'user' };
+          const newUser: User = { email: email.toLowerCase(), password, role: 'user' };
           await db.addUser(newUser);
           const allUsers = await db.getUsers();
           setUsers(allUsers);
+          setNotification({ message: `User '${email}' created successfully.`, type: 'success' });
           return null;
       } catch (e) {
           const error = e as Error;
@@ -191,6 +173,7 @@ export default function App() {
       await db.deleteUser(email);
       const allUsers = await db.getUsers();
       setUsers(allUsers);
+      setNotification({ message: `User '${email}' has been deleted.`, type: 'success' });
   };
 
   const handleSendMessage = useCallback(async (text: string) => {
@@ -249,7 +232,7 @@ export default function App() {
     if(window.confirm("Are you sure you want to reset the knowledge base? This action will clear all uploaded data and cannot be undone.")){
         setKnowledgeBaseText('');
         setDrawings([]);
-        setAdminPanelKey(Date.now());
+        setMessages([]);
         try {
           await db.clearKnowledgeBase();
           setNotification({ message: 'Knowledge base has been cleared.', type: 'success'});
@@ -259,21 +242,6 @@ export default function App() {
         }
     }
   }, []);
-
-  const handleViewToggle = () => {
-    if (loggedInUser?.role === 'admin') {
-      setView(prev => prev === 'chat' ? 'admin' : 'chat');
-    }
-  };
-
-  // --- Render Logic ---
-
-  if (showLandingPage) {
-    return <LandingPage onStart={() => {
-        setShowLandingPage(false);
-        setAppStatus('loading');
-    }} />;
-  }
   
   const renderReadyState = () => {
     const renderContent = () => {
@@ -282,7 +250,6 @@ export default function App() {
           <div className="flex-grow flex items-start justify-center pt-6">
               <div className="w-full max-w-4xl">
                   <AdminPanel 
-                      key={adminPanelKey}
                       onKnowledgeBaseUpdate={handleKnowledgeBaseUpdate}
                       users={users}
                       onAddUser={handleAddUser}
@@ -341,7 +308,7 @@ export default function App() {
             language={language}
             onLanguageChange={setLanguage}
             view={view}
-            onViewToggle={handleViewToggle}
+            onViewToggle={() => setView(prev => prev === 'chat' ? 'admin' : 'chat')}
             user={loggedInUser}
             onLogout={handleLogout}
           />
@@ -352,27 +319,25 @@ export default function App() {
     );
   };
 
-  const renderAppStatus = () => {
-      switch(appStatus) {
-        case 'loading':
-            return (
-                <div className="flex items-center justify-center h-screen">
-                    <div className="text-center flex flex-col items-center space-y-3 text-gray-600">
-                        <SpinnerIcon className="h-10 w-10 animate-spin text-brand-primary" />
-                        <p className="text-lg">Initializing Application...</p>
-                    </div>
+  switch(appStatus) {
+    case 'landing':
+      return <LandingPage onStart={initializeApp} />;
+    case 'loading':
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-center flex flex-col items-center space-y-3 text-gray-600">
+                    <SpinnerIcon className="h-10 w-10 animate-spin text-brand-primary" />
+                    <p className="text-lg">Initializing Application...</p>
                 </div>
-            );
-        case 'setup':
-            return <AdminSetupPage adminEmail={ADMIN_EMAIL} onSetup={handleAdminSetup} error={authError} />;
-        case 'login':
-            return <LoginPage onLogin={handleLogin} error={authError} />;
-        case 'ready':
-            return renderReadyState();
-        default:
-            return <div className="text-red-500 text-center p-8">Invalid application state.</div>;
-      }
-  };
-
-  return renderAppStatus();
+            </div>
+        );
+    case 'setup':
+        return <AdminSetupPage adminEmail={ADMIN_EMAIL} onSetup={handleAdminSetup} error={authError} />;
+    case 'login':
+        return <LoginPage onLogin={handleLogin} error={authError} />;
+    case 'ready':
+        return renderReadyState();
+    default:
+        return <div className="text-red-500 text-center p-8">Invalid application state.</div>;
+  }
 }

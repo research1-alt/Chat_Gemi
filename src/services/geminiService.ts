@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { BotResponse } from "../types";
 
@@ -89,8 +88,6 @@ const languageMap: { [key: string]: string } = {
     'gu': 'Gujarati',
 };
 
-// FIX: Per coding guidelines, removed apiKey parameter and now use process.env.API_KEY for initialization.
-// This resolves the argument mismatch error in src/App.tsx.
 export async function getSolution(sheetData: string, userQuery: string, language: string, drawingFileNames: string[]): Promise<BotResponse> {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 

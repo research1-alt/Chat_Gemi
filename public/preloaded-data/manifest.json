@@ -1,7 +1,8 @@
 {
   "files": [
-    "Circuit_MM.pptx",
-    "Gen2.pptx"
+    "Circuit Diagram MM.pdf",
+    "Gen2.pdf"
+    "Matel Motion.pdf"
   ],
   "instructions": "This app is pre-loaded with the placeholder files listed above. To use your own data, please replace these example files in the 'preloaded-data' directory with your actual knowledge base files (documents, spreadsheets, drawings, etc.). Then, update the 'files' array above to match your exact filenames. The app will load these files automatically on its first launch."
 }

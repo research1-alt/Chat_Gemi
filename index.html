@@ -20,19 +20,19 @@
 <script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
-    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "xlsx": "https://aistudiocdn.com/xlsx@^0.18.5",
+    "jszip": "https://aistudiocdn.com/jszip@^3.10.1",
     "mammoth": "https://aistudiocdn.com/mammoth@^1.11.0",
-    "vite": "https://aistudiocdn.com/vite@^7.1.10",
-    "pdfjs-dist/": "https://aistudiocdn.com/pdfjs-dist@^5.4.296/",
     "pdfjs-dist": "https://aistudiocdn.com/pdfjs-dist@^5.4.296",
     "path": "https://aistudiocdn.com/path@^0.12.7",
-    "jszip": "https://aistudiocdn.com/jszip@^3.10.1",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.4"
+    "vite": "https://aistudiocdn.com/vite@^7.1.10",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.0.4",
+    "url": "https://aistudiocdn.com/url@^0.11.4",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "pdfjs-dist/": "https://aistudiocdn.com/pdfjs-dist@^5.4.296/"
   }
 }
 </script>
@@ -45,7 +45,7 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           // Explicitly construct the Service Worker URL from the current origin
-          // to prevent cross-origin registration errors in sandboxed environments like AI Studio.
+          // to prevent cross-origin registration errors in sandboxed environments.
           const swUrl = new URL('/service-worker.js', window.location.origin).toString();
           navigator.serviceWorker.register(swUrl).then(registration => {
             console.log('ServiceWorker registration successful with scope: ', registration.scope);
