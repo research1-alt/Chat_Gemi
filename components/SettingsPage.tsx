@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import FileUpload from './FileUpload';
-import { StoredFile, getAllFiles, addFile, deleteFile, addFiles } from '../utils/db';
-import { defaultLibraryFiles } from '../defaultLibrary';
+import { StoredFile, getAllFiles, addFile, deleteFile } from '../utils/db';
 
 interface ActiveFile {
   name: string;
@@ -44,7 +43,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 }) => {
     const [library, setLibrary] = useState<StoredFile[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isDefaultLoading, setIsDefaultLoading] = useState(false);
 
     const refreshLibrary = useCallback(async () => {
         setIsLoading(true);
@@ -88,18 +86,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
     const handleLoad = (file: StoredFile) => {
         onFileLoad({name: file.name, content: file.content});
     }
-
-    const handleLoadDefaultLibrary = useCallback(async () => {
-        setIsDefaultLoading(true);
-        try {
-            await addFiles(defaultLibraryFiles);
-            await refreshLibrary();
-        } catch (err) {
-            onError(err instanceof Error ? err.message : 'Could not load the default library.');
-        } finally {
-            setIsDefaultLoading(false);
-        }
-    }, [onError, refreshLibrary]);
 
   return (
     <div className="h-screen w-screen bg-white flex items-center justify-center font-sans text-gray-900 p-4">
@@ -156,14 +142,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                             <tr>
                                 <td colSpan={4} className="text-center p-8">
                                     <h3 className="font-semibold text-gray-700">Your library is empty.</h3>
-                                    <p className="text-gray-500 mt-1 mb-4">Upload your own files or load the sample knowledge base to get started.</p>
-                                    <button
-                                        onClick={handleLoadDefaultLibrary}
-                                        disabled={isDefaultLoading}
-                                        className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-wait"
-                                    >
-                                        {isDefaultLoading ? 'Loading...' : 'Load Sample Knowledge Base'}
-                                    </button>
+                                    <p className="text-gray-500 mt-1">Upload files or a folder to build your knowledge base.</p>
                                 </td>
                             </tr>
                         ) : (

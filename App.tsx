@@ -4,7 +4,8 @@ import SettingsPage from './components/SettingsPage';
 import IntroPage from './components/IntroPage';
 import { ChatMessage } from './types';
 import { getChatbotResponse } from './services/geminiService';
-import { getFile } from './utils/db'; // Import IndexedDB utility
+import { getFile, addFile, getAllFiles } from './utils/db'; // Import db utils
+import { matelEvKnowledgeBase } from './defaultLibrary'; // Import new knowledge base
 
 const languageOptions = {
     'en-US': 'English',
@@ -36,6 +37,25 @@ const App: React.FC = () => {
     const savedLang = sessionStorage.getItem('app-language');
     return savedLang ? JSON.parse(savedLang) : 'en-US';
   });
+
+  // --- Effect to pre-load default knowledge base on first run ---
+  useEffect(() => {
+    const seedDatabase = async () => {
+      try {
+        const existingFiles = await getAllFiles();
+        if (existingFiles.length === 0) {
+          console.log("Knowledge base is empty. Seeding with default MATEL EV guide...");
+          for (const file of matelEvKnowledgeBase) {
+            await addFile(file);
+          }
+          console.log("Default knowledge base seeded successfully.");
+        }
+      } catch (error) {
+        console.error("Failed to seed the database:", error);
+      }
+    };
+    seedDatabase();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   // --- Effect to load active file from permanent storage on startup ---
   useEffect(() => {

@@ -57,7 +57,7 @@ async function parsePptx(file: File): Promise<string> {
 }
 
 async function parseZip(file: File): Promise<string> {
-    const zip = await JSZip.loadAsync(file, { password: 'Arvind@1223' });
+    const zip = await JSZip.loadAsync(file);
     let combinedText = '';
     const contentPromises: Promise<string>[] = [];
 
@@ -92,7 +92,7 @@ async function parseZip(file: File): Promise<string> {
     combinedText = allContents.join('').trim();
 
     if (!combinedText) {
-        throw new Error("No readable or supported files found in the ZIP archive, or the password may be incorrect.");
+        throw new Error("No readable or supported files found in the ZIP archive. If the archive is password-protected, it cannot be opened.");
     }
     return combinedText;
 }

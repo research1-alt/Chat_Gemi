@@ -36,19 +36,6 @@ export const addFile = async (file: StoredFile): Promise<void> => {
     });
 };
 
-export const addFiles = async (files: StoredFile[]): Promise<void> => {
-    const db = await openDB();
-    const transaction = db.transaction(STORE_NAME, 'readwrite');
-    const store = transaction.objectStore(STORE_NAME);
-    files.forEach(file => {
-        store.put(file);
-    });
-    return new Promise((resolve, reject) => {
-        transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error);
-    });
-};
-
 export const getAllFiles = async (): Promise<StoredFile[]> => {
     const db = await openDB();
     const transaction = db.transaction(STORE_NAME, 'readonly');
