@@ -221,333 +221,410 @@ If the relay fails any of these tests, it should be replaced.
 `;
 
 const IssueorDiagnosticDocumentContent = `
-# MATEL Issueor Diagnostic and Troubleshooting Guide
+# Error - Diagnostic Document
 
-This document contains a list of Issueor codes, their descriptions, causes, and recommended troubleshooting actions.
+This document provides a comprehensive list of error codes, their descriptions, definitions, occurrence conditions, and troubleshooting steps.
 
-## Part 1: Comprehensive Issueor List
+---
 
-| S.N | Issue Code | Description |
-|---|---|---|
-| 1 | Issue-01 | Battery Fault |
-| 2 | Issue-02 | Battery Over Temperature |
-| 3 | Issue-03 | Battery Severe Over Temperature |
-| 4 | Issue-04 | Battery Under Temperature |
-| 5 | Issue-05 | Battery Severe Under Temperature |
-| 6 | Issue-06 | Battery Severe Over Voltage |
-| 7 | Issue-07 | Battery Over Voltage |
-| 8 | Issue-08 | Battery Under Voltage |
-| 9 | Issue-09 | Battery Severe Under Voltage |
-| 10 | Issue-10 | MOSFET Failure |
-| 11 | Issue-11 | Precharge Failure |
-| 12 | Issue-12 | Severe DockPos Temperature |
-| 13 | Issue-13 | Severe DockNeg Temperature |
-| 14 | Issue-14 | Over DockPos Temperature |
-| 15 | Issue-15 | Over DockNeg Temperature |
-| 16 | Issue-16 | Less Battery During KeyOn |
-| 17 | Issue-17 | Less Battery During Drive |
-| 18 | Issue-18 | Permanent DockPos Temp |
-| 19 | Issue-19 | Permanent DockNeg Temp |
-| 20 | Issue-20 | MCU Communication |
-| 21 | Issue-21 | EV InSense Malfunction |
-| 22 | Issue-22 | EVout Sense Malfunction |
-| 23 | Issue-27 | Battery Thermal Runaway Alert |
-| 24 | Issue-28 | Battery Thermal Runaway |
-| 25 | Issue-29 | Peak Current Warning |
-| 26 | Issue-31 | Controller Overcurrent |
-| 27 | Issue-32 | Current Sensor Fault |
-| 28 | Issue-33 | Precharge Failed |
-| 29 | Issue-34 | Controller Severe Undertemp |
-| 30 | Issue-35 | Controller Severe Overtemp |
-| 31 | Issue-36 | Severe B+ Undervoltage |
-| 32 | Issue-37 | Severe KSI Undervoltage |
-| 33 | Issue-38 | Severe B+ Overvoltage |
-| 34 | Issue-39 | Severe KSI Overvoltage |
-| 35 | Issue-40 | Controller Overtemp Cutback |
-| 36 | Issue-41 | B+ Undervoltage Cutback |
-| 37 | Issue-42 | B+ Overvoltage Cutback |
-| 38 | Issue-43 | 5V Supply Failure |
-| 39 | Issue-44 | Motor Temp Hot Cutback |
-| 40 | Issue-45 | Motor Temp Sensor Fault |
-| 41 | Issue-46 | Main Contactor Open/Short |
-| 42 | Issue-47 | Sin/Cos Sensor Fault |
-| 43 | Issue-48 | Motor Phase Open |
-| 44 | Issue-49 | Main Contactor Welded |
-| 45 | Issue-50 | Main Contactor Did not Close |
-| 46 | Issue-51 | Throttle wiper High |
-| 47 | Issue-52 | Throttle wiper Low |
-| 48 | Issue-53 | EEPROM Failure |
-| 49 | Issue-54 | VCL Run Time Issueor |
-| 50 | Issue-55 | Motor Characterization fault |
-| 51 | Issue-56 | Encoder Pulse Count Fault |
-| 52 | Issue-57 | Encoder LOS |
-| 53 | Issue-58 | Brake POT Engage |
-| 54 | Issue-59 | Brake POT fault |
-| 55 | Issue-60 | High Pedal Disable |
-
-## Part 2: Detailed Issueor Diagnostics
-
-This section provides definitions, causes, and troubleshooting for the Issueor codes.
-
-### Issue-01: Battery Fault
+## Err-01: Battery Fault
 - **Definition:** Battery common fault.
-- **Occurrence Condition:** High Discharging current rate; Battery Internal loose connection; MCU Pushing High Regen Current; Battery Temperature sensor not working.
-- **Troubleshooting:** Check Discharging current rate; Replace the Battery Pack; Check and update to MCU Team; Update to supplier.
+- **Occurrence Condition:** 
+  1. Due to high Discharging current rate.
+  2. Due to Battery Internal loose connection.
+  3. MCU Pushing High Regen Current.
+  4. Battery Temperature sensor not working.
+- **Troubleshooting:**
+  1. Check Dishcarging current rate.If Found as per required that's ok.
+  2. Replace the Battery Pack.
+  3. Check and update to MCU Team.
+  4. Update to supplier.
 
-### Issue-02: Battery Over Temperature
+## Err-02: Battery Over Temperature
 - **Definition:** Battery temperature is above normal safe range.
-- **Occurrence Condition:** High Discharging current rate; Battery Internal loose connection; MCU Pushing High Regen Current; Battery Temperature sensor not working.
-- **Troubleshooting:** Check Discharging current rate; Replace the Battery Pack; Check and update to MCU Team; Update to supplier.
+- **Occurrence Condition:**
+  1. Due to high Discharging current rate.
+  2. Due to Battery Internal loose connection.
+  3. MCU Pushing High Regen Current.
+  4. Battery Temperature sensor not working.
+- **Troubleshooting:**
+  1. Check Dishcarging current rate.If Found as per required that's ok.
+  2. Replace the Battery Pack.
+  3. Check and update to MCU Team.
+  4. Update to supplier.
 
-### Issue-03: Battery Severe Over Temperature
+## Err-03: Battery Severe Over Temperature
 - **Definition:** Battery temperature has crossed the critical safe limit, risk of damage or fire.
-- **Occurrence Condition:** High Discharging current rate; Battery Internal loose connection; MCU Pushing High Regen Current; Battery Temperature sensor not working.
-- **Troubleshooting:** Check Discharging current rate; Replace the Battery Pack; Check and update to MCU Team; Update to supplier.
+- **Occurrence Condition:** 
+  1. Battery temp sensor not Working.
+  2. Ambient temp is too low to operate Battery.
+- **Troubleshooting:** 
+  Check Ambient Temp and Compare with Battrey temperature.
+  1. If there is more Temp Differnece. Update to Supplier, may be Battery Temp Sensor not Working.
+  2. If Both are same than hold some time to increase Battery temp.
 
-### Issue-04: Battery Under Temperature
+## Err-04: Battery Under Temperature
 - **Definition:** Battery is below the safe operating range.
-- **Occurrence Condition:** Battery temp sensor not Working; Ambient temp is too low to operate Battery.
-- **Troubleshooting:** Check Ambient Temp and Compare with Battery temperature. If there is more Temp Difference, Update to Supplier, may be Battery Temp Sensor not Working. If Both are same than hold some time to increase Battery temp.
+- **Occurrence Condition:** 
+  1. Battery temp sensor not Working.
+  2. Ambient temp is too low to operate Battery.
+- **Troubleshooting:** 
+  Check Ambient Temp and Compare with Battrey temperature.
+  1. If there is more Temp Differnece. Update to Supplier, may be Battery Temp Sensor not Working.
+  2. If Both are same than hold some time to increase Battery temp.
 
-### Issue-05: Battery Severe Under Temperature
+## Err-05: Battery Severe Under Temperature
 - **Definition:** Battery temperature has fallen well below the critical safe limit.
-- **Occurrence Condition:** Battery temp sensor not Working; Ambient temp is too low to operate Battery.
-- **Troubleshooting:** Check Ambient Temp and Compare with Battery temperature. If there is more Temp Difference, Update to Supplier, may be Battery Temp Sensor not Working. If Both are same than hold some time to increase Battery temp.
+- **Occurrence Condition:** 
+  1. Higher regen Current.
+  2. Unauthorized Charger using.
+- **Troubleshooting:** 
+  1. Check Regen Current Value.
+  2. Use Authorized Charger.
 
-### Issue-06: Battery Severe Over Voltage
+## Err-06: Battery Severe Over Voltage
 - **Definition:** Battery voltage has crossed the critical maximum limit.
-- **Occurrence Condition:** Higher regen Current; Unauthorized Charger using.
-- **Troubleshooting:** Check Regen Current Value; Use Authorized Charger.
+- **Occurrence Condition:**
+  1. Higher regen Current.
+  2. Battery Over Charge.
+  3. Charging Full Indication.
+- **Troubleshooting:**
+  1. Check Regen Current Value.
+  2. After Charging Hold the Vehicle For Some Time.It will be normal after Some Time.
 
-### Issue-07: Battery Over Voltage
+## Err-07: Battery Over Voltage
 - **Definition:** Battery voltage is above normal safe range.
-- **Occurrence Condition:** Higher regen Current; Battery Over Charge; Charging Full Indication.
-- **Troubleshooting:** Check Regen Current Value; After Charging Hold the Vehicle For Some Time. It will be normal after Some Time.
+- **Occurrence Condition:** 
+  1. Less Battery Remaining.
+- **Troubleshooting:** 
+  1. Charge the Battery Pack.
+  2. Try to Charge the Battery Pack. If not Charging Update to supplier or Charge using slow Charger.
 
-### Issue-08: Battery Under Voltage
+## Err-08: Battery Under Voltage
 - **Definition:** Battery voltage has dropped below safe range.
-- **Occurrence Condition:** Less Battery Remaining.
-- **Troubleshooting:** Charge the Battery Pack; Try to Charge the Battery Pack. If not Charging Update to supplier or Charge using slow Charger.
+- **Occurrence Condition:** 
+  1. Battery is in Idle Condition from a long time.
+- **Troubleshooting:** 
+  1. Turn off Vehicle and Update to Battery Supplier.
 
-### Issue-09: Battery Severe Under Voltage
+## Err-09: Battery Severe Under Voltage
 - **Definition:** Battery voltage is far below the critical limit.
-- **Occurrence Condition:** Battery is in Idle Condition from a long time.
-- **Troubleshooting:** Turn off Vehicle and Update to Battery Supplier.
+- **Occurrence Condition:** 
+  1. Current Spike during Drive.
+- **Troubleshooting:** 
+  1. Remove all the connection.
+  2. Turn on Battery Separtely. If still getting Error, Update to Supplier.
 
-### Issue-10: MOSFET Failure
+## Err-10: MOSFET Failure
 - **Definition:** Power MOSFET (used in BMS/inverter) stops working due to short circuit, open circuit, or thermal damage.
-- **Occurrence Condition:** Current Spike during Drive.
-- **Troubleshooting:** Remove all the connection. Turn on Battery Separately. If still getting Issueor, Update to Supplier.
+- **Occurrence Condition:** 
+  1. Internal Mishapping in Battery.
+- **Troubleshooting:** NA
 
-### Issue-11: Precharge Failure
-- **Definition:** Battery Internal Failure.
-- **Occurrence Condition:** Internal Mishapping in Battery.
-- **Troubleshooting:** Stop the Vehicle for Some time and Check Battery Voltage is going to down or not. If temp is still same, update to supplier.
+## Err-11: Precharge Failure
+- **Definition:** Battrey Internal Failure
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
 
-### Issue-12 to Issue-15: Dock Temperature Faults
-- **Issue-12:** Severe DockPos Temperature
-- **Issue-13:** Severe DockNeg Temperature
-- **Issue-14:** Over DockPos Temperature
-- **Issue-15:** Over DockNeg Temperature
-- **Definition:** Bus Bar High Temp (+ve), Bus Bar High Temp (-ve), Bus Bar Cutoff Over Temp +ve, Bus Bar Cutoff Over Temp -ve.
-- **Troubleshooting:** Turn off Vehicle and Check Battery Temp. If temp is Below 60 Degree and you still get the Issueor, Update to Supplier.
+## Err-12: Severe DockPos Temperature
+- **Definition:** Bus Bar High Temp (+ve)
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
 
-### Issue-16: Less Battery During KeyOn
-- **Definition:** If SOC <20%, When Ignition ON.
-- **Occurrence Condition:** Battery SOC Less than 20%.
-- **Troubleshooting:** Charge the Battery Pack.
+## Err-13: Severe DockNeg Temperature
+- **Definition:** Bus Bar High Temp (-ve)
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
 
-### Issue-17: Less Battery During Drive
-- **Definition:** If SOC <20%, While Drive.
-- **Occurrence Condition:** Less Battery Voltage.
-- **Troubleshooting:** Charge the Battery Pack.
+## Err-14: Over DockPos Temperature
+- **Definition:** Bus Bar Cuttoff Over Temp +ve
+- **Occurrence Condition:** 
+  1. Battery SOC Less than 20%
+- **Troubleshooting:** 
+  1. Charge the Battery Pack.
 
-### Issue-18 & Issue-19: Permanent Dock Temperature Faults
-- **Issue-18:** Permanent DockPos Temp
-- **Issue-19:** Permanent DockNeg Temp
-- **Definition:** Recurring temp fault.
-- **Troubleshooting:** Check Continous Drive Current Value. Check Wheels are loose or not. Both Condition Matters Drive Current should be less than Battery Drive current limit also wheel should be Free.
+## Err-15: Over DockNeg Temperature
+- **Definition:** Bus Bar Cuttoff Over Temp -ve
+- **Occurrence Condition:** 
+  1. Less Battery Voltage.
+- **Troubleshooting:** 
+  1. Charge the Battery Pack.
 
-### Issue-20: MCU Communication
-- **Definition:** NO Communication with MCU - Consider Mode ID from Controller ID-1826FF81, at Starting Bit 56, Length 3, Intel.
-- **Occurrence Condition:** Battery not getting MCU Can; FW Related Issue.
-- **Troubleshooting:** Check MCU Can is Coming in Common Can Line. Check at Battery Can Point. If both Points have MCU Can but still Issueor comes than update to Supplier.
+## Err-16: Less Battery During KeyOn
+- **Definition:** If SOC <20%, When Ignition ON
+- **Occurrence Condition:** 
+  1. Battery not getting MCU Can.
+  2. FW Related Issue.
+- **Troubleshooting:** 
+  1. Check MCU Can is Coming in Common Can Line.
+  2. Check at Battery Can Point. If both Points have MCU Can but still error comes than update to Supplier.
 
-### Issue-21 & Issue-22: EV Sense Malfunctions
-- **Issue-21:** EV InSense Malfunction (Reverse current detected)
-- **Issue-22:** EVout Sense Malfunction (Output voltage/current not sensed)
-- **Troubleshooting:** Check the Battery cell voltages.
+## Err-17: Less Battery During Drive
+- **Definition:** If SOC <20%, While Drive
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
 
-### Issue-27 & Issue-28: Battery Thermal Runaway
-- **Definition:** As per the Battery Condition.
-- **Occurrence Condition:** Battery is at its higher temp Range; Temp Sensor Issue.
-- **Troubleshooting:** Check for the Battery and Controller settings; Check the Battery cell voltages.
+## Err-18: Permanent DockPos Temp
+- **Definition:** Recurring temp fault
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
 
-### Issue-29: Peak Current Warning
-- **Definition:** If current continuous demand more then the limit.
-- **Occurrence Condition:** MCU Using Continuous high Current; Wheel Jammed.
-- **Troubleshooting:** Check the voltage between Pin 1 & 5 of Encoder Connector; check for short in Brake POT or Throttle connection.
+## Err-19: Permanent DockNeg Temp
+- **Definition:** Recurring temp fault
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
 
-### Issue-31: Controller Overcurrent
-- **Definition:** Motor current exceeded controller rated maximum.
-- **Cause:** UVW terminal Loose Connection / External Short of UVW cable / burnt / continuity; Regen current not accepted by the battery; Motor parameters may be mistuned; Wheel Jammed; Motor Shaft Jammed.
-- **Troubleshooting:** Check Motor U, V, W cable connections; Check for throttle release, then the Issueor comes-it is battery Issue; Auto characterise the Motor; Check for freeness of wheels, If not rotating freely, Make it free; Check the motor shaft for its free rotation; If Motor shaft is Jammed - Replace the Motor.
+## Err-20: MCU Communication
+- **Definition:** NO Communication with MCU - Consider Mode ID from Controller ID-1826FF81, at Starting Bit 56, Length 3, Intel,
+- **Occurrence Condition:** 
+  1. Battery is at his higher temp Range.
+  2. Temp Sensor Issue.
+- **Troubleshooting:**
+  1. Stop the Vehicle for Some time and Check Battery Voltage is going to down or not.
+  2. If temp is still same, update to supplier.
 
-### Issue-32: Current Sensor Fault
-- **Definition:** Current sensor auto-zero value outside of allowed range.
-- **Cause:** External Short for U, V and W Cable.
-- **Troubleshooting:** if the short found - Remove Short; No Short found - Replace the controller.
+## Err-21: EV InSense Malfunction
+- **Definition:** Reverse current detected
+- **Occurrence Condition:** 
+  1. Battery higher Internal Temp.
+  2. Temp Sensor Not working.
+- **Troubleshooting:**
+  1. Turn off Vehicle and Check Battery Temp. If temp is Below 60 Degree and you still get the Error, Update to Supplier.
+  2. Update to Supplier.
 
-### Issue-33: Precharge Failed
-- **Definition:** Capacitor voltage did not rise above 5V at power up.
-- **Cause:** When there is any additional Load connected in 48V Line; Internal failure in controller.
-- **Troubleshooting:** Check battery connection for reverse polarity, or check internal / external short circuit across the DC link; if no issue found - Replace the controller and check.
+## Err-22: EVout Sense Malfunction
+- **Definition:** Output voltage/current not sensed
+- **Occurrence Condition:** 
+  1. MCU Using Continous high Current.
+  2. Wheel Jamed.
+- **Troubleshooting:**
+  1. Check Continous Drive Current Value.
+  2. Check Wheels are loose or not. Both Condition Matters Drive Current should be less than Battery Drive current limit also wheel should be Free.
 
-### Issue-34 & Issue-35: Controller Temperature Faults
-- **Issue-34:** Controller Severe Undertemp
-- **Issue-35:** Controller Severe Overtemp
+## Err-27: Battery Thermal Runaway Alert
+- **Definition:** As per the Battery Condition
+- **Occurrence Condition:** 
+  1. UVW terminal Loose Connection / External Short of UVW cable / burnt / continuity
+  2. Regen current not accepted by the battery
+  3. Motor paramaters may be mistuned
+  4. Wheel Jammed
+  5. Motor Shaft Jammed
+- **Troubleshooting:**
+  1. Check Motor U, V W cable connections
+  2. Check for throttle release, then the error comes-it is battery Issue.
+  3. Auto characterise the Motor
+  4. Check for freeness of wheels,If not rotating freely, Make it free
+  5. Check the motor shaft for its free rotation. If Motor shaft is Jammed - Replace the Motor
+
+## Err-28: Battery Thermal Runaway
+- **Definition:** As per the Battery Condition
+- **Occurrence Condition:** 
+  External Short for U, V and W Cable
+- **Troubleshooting:**
+  1. if the short found- Remove Short
+  2. No Short found - Replace the controller
+
+## Err-29: Peak Current Warning
+- **Definition:** If current contineous demand more then the limit
+- **Occurrence Condition:** 
+  1. When there is any additional Load connected in 48V Line
+  2. Internal failure in controller
+- **Troubleshooting:**
+  1. Check battery connection for reverse polarity, or check internal / external short circuit across the DC link
+  2. if no issue found - Replace the controller and check
+
+## Err-31: Controller Overcurrent
+- **Definition:** Motor current exceeded controller rated maximum
+- **Occurrence Condition:** 
+  1. Controller heatsink may be dirty / mudded
+  2. Controller heat sink is rigidly not mounted to controller.
+  3. Vehicle is overloaded
+- **Troubleshooting:** Allow controller to warm up to normal operating temperature
+
+## Err-32: Current Sensor Fault
+- **Definition:** Current sensor auto-zero value outside of allowed range
+- **Occurrence Condition:** Battery voltage has dropped below critical level
+- **Troubleshooting:** 
+  1. check for Heat Sink is covered with dirt/Mud- Clean Heat Sink.
+  2. check for Heat sink is properly mounted
+  3. Remove the Additional Load and allow the controller to cool down
+
+## Err-33: Precharge Failed
+- **Definition:** Capacitor voltage did not rise above 5V at power up
+- **Occurrence Condition:** Battery voltage is less than rated minimum voltage for controller for longer than 1sec
+- **Troubleshooting:** Charge battery or check DC link voltage is within controller operating range
+
+## Err-34: Controller Severe Undertemp
 - **Definition:** Controller heatsink (or junctions, capacitors, PCB) has reached critical high temperature, and the controller has shut down.
-- **Cause:** Controller heatsink may be dirty / mudded; Controller heat sink is rigidly not mounted to controller; Vehicle is overloaded.
-- **Troubleshooting (Undertemp):** Allow controller to warm up to normal operating temperature.
-- **Troubleshooting (Overtemp):** check for Heat Sink is covered with dirt/Mud- Clean Heat Sink; check for Heat sink is properly mounted; Remove the Additional Load and allow the controller to cool down.
+- **Occurrence Condition:** Capacitor voltage is greater than rated maximum voltage for controller for longer than 1sec
+- **Troubleshooting:** Charge battery or check DC link voltage is within controller operating range
 
-### Issue-36 & Issue-37: Undervoltage Faults
-- **Issue-36:** Severe B+ Undervoltage
-- **Issue-37:** Severe KSI Undervoltage
-- **Definition (B+):** MCU Voltage is far below the critical limit.
-- **Definition (KSI):** MCU KSI Voltage is below normal safe range.
-- **Cause:** Battery voltage has dropped below critical level.
-- **Troubleshooting:** Charge battery or check DC link voltage is within controller operating range.
-
-### Issue-38 & Issue-39: Overvoltage Faults
-- **Issue-38:** Severe B+ Overvoltage
-- **Issue-39:** Severe KSI Overvoltage
-- **Definition (B+):** MCU KSI Voltage is far Upper the critical limit.
-- **Definition (KSI):** MCU KSI Voltage is above normal safe range.
-- **Cause (B+):** Capacitor voltage is greater than rated maximum voltage for controller for longer than 1sec.
-- **Cause (KSI):** Battery voltage is greater than rated maximum voltage for controller for longer than 1sec.
-- **Troubleshooting:** Charge battery or check DC link voltage is within controller operating range.
-
-### Issue-40: Controller Overtemp Cutback
+## Err-35: Controller Severe Overtemp
 - **Definition:** Controller heatsink (or junctions, capacitors, PCB) has reached critical high temperature, and the controller has shut down.
-- **Cause:** Controller heatsink may be dirty / mudded; Controller heat sink is rigidly not mounted to controller; Vehicle is overloaded.
-- **Troubleshooting:** check for Heat Sink is covered with dirt/Mud- Clean Heat Sink; check for Heat sink is properly mounted; Remove the Additional Load and allow the controller to cool down.
+- **Occurrence Condition:** Battery voltage is greater than rated maximum voltage for controller for longer than 1sec
+- **Troubleshooting:** Charge battery or check DC link voltage is within controller operating range
 
-### Issue-41 & Issue-42: Voltage Cutback
-- **Issue-41:** B+ Undervoltage Cutback (During running, vehicle reached to low SOC)
-- **Issue-42:** B+ Overvoltage Cutback (During running at higher SOC)
-- **Definition (Under):** Battery voltage is less than the configured Under Voltage limit for longer than the protection delay.
-- **Definition (Over):** Battery voltage is greater than the configured Over Voltage limit for longer than the protection delay.
-- **Troubleshooting:** Charge battery or check DC link voltage is within controller operating range.
+## Err-36: Severe B+ Undervoltage
+- **Definition:** MCU Voltage is far below the critical limit.
+- **Occurrence Condition:**
+  1. Controller heatsink may be dirty / mudded
+  2. Controller heat sink is rigidly not mounted to controller.
+  3. Vehicle is overloaded
+- **Troubleshooting:** Charge battery or check DC link voltage is within controller operating range
 
-### Issue-43: 5V Supply Failure
-- **Definition:** 5V Supply for Analog Signal Missing.
-- **Cause:** Short in Throttle, POT or Encoder Connection.
-- **Troubleshooting:** check the encoder connector wiring. Check the voltage between Pin 2 & 5 of Encoder Connector. check for additional load and allow the motor to cool down.
+## Err-37: Severe KSI Undervoltage
+- **Definition:** MCU KSIVoltage is below normal safe range.
+- **Occurrence Condition:** NA
+- **Troubleshooting:**
+  1. check for Heat Sink is covered with dirt/Mud- Clean Heat Sink.
+  2. check for Heat sink is properly mounted
+  3. Remove the Additional Load and allow the controller to cool down
 
-### Issue-44: Motor Temp Hot Cutback
-- **Definition:** Motor in thermal cutback.
-- **Cause:** Encoder connector wire damaged or cut; Motor temperature resistor failure; Vehicle overloaded.
-- **Troubleshooting:** check for the voltage between 2 and 5 in encoder connector and shall be 12V; check for the temperature resistance between pin 2 and 5 of the encoder connector of the motor side as per PT1000.
+## Err-38: Severe B+ Overvoltage
+- **Definition:** MCU KSI Voltage is far Upper the critical limit.
+- **Occurrence Condition:** Battery voltage is less than the configured Under Voltage limit for longer than the protection delay
+- **Troubleshooting:** 1. Check the Battery cell voltages.
 
-### Issue-45: Motor Temp Sensor Fault
-- **Definition:** Motor Temperature input not available.
-- **Cause:** Encoder connector wire damaged or cut; Motor temperature resistor failure.
-- **Troubleshooting:** check for the voltage between 2 and 5 in encoder connector and shall be 12V; check for the temperature resistance between pin 2 and 5 of the encoder connector of the motor side as per PT1000.
+## Err-39: Severe KSI Overvoltage
+- **Definition:** MCU KSIVoltage is above normal safe range.
+- **Occurrence Condition:** Battery voltage is greater than the configured Over Voltage limit for longer than the protection delay
+- **Troubleshooting:**
+  1. Check for the Battery and Controller settings
+  2. Check the Battery cell voltages.
 
-### Issue-46: Main Contactor Open/Short
-- **Definition:** Line contactor not closed.
-- **Cause:** contactor coil connection issue; Contactor rust.
-- **Troubleshooting:** check for coil connections; check for rust; check the coil voltage.
+## Err-40: Controller Overtemp Cutback
+- **Definition:** Controller heatsink (or junctions, capacitors, PCB) has reached critical high temperature, and the controller has shut down.
+- **Occurrence Condition:** 5V Supply for Analog Signal Missing
+- **Troubleshooting:**
+  1. Check the voltage between Pin 1 & 5 of Encoder Connector
+  2. check for short in Brake POT or Throttle connection
 
-### Issue-47: Sin/Cos Sensor Fault
-- **Definition:** SinCos Values out of range with warning.
-- **Cause:** Encoder wires damaged / Pin back out; Wheels are Jammed.
-- **Troubleshooting:** Check for sincos sensor, wiring and encoder configuration; Check for wheel freeness.
+## Err-41: B+ Undervoltage Cutback
+- **Definition:** NA
+- **Occurrence Condition:** Motor in thermal cutback
+- **Troubleshooting:**
+  1. check the encoder connector wiring.
+  2. Check the voltage between Pin 2 & 5 of Encoder Connector
+  3. check for additional load and allow the motor to cool down
 
-### Issue-48: Motor Phase Open
-- **Definition:** Motor controller unable to maintain control of motor currents.
-- **Cause:** Encoder angle misalignment; UVW cable loose connections; Encoder connector Pin back out.
-- **Troubleshooting:** Check for motor cable and encoder connector wiring; Motor characterisation to be done.
+## Err-42: B+ Overvoltage Cutback
+- **Definition:** NA
+- **Occurrence Condition:** Motor Temperature input not available
+- **Troubleshooting:**
+  1. check for the voltage between 2 and 5 in encoder connector and shall be 12V
+  2. check for the temperature resistance between pin 2 and 5 of the encoder connector of the motor side as per PT1000.
 
-### Issue-49: Main Contactor Welded
-- **Definition:** Line contactor appears to be closed when the coil is NOT energized.
-- **Cause:** Contactor tips got physically short.
-- **Troubleshooting:** Check line contactor hasn't welded / closed and the wiring is correct.
+## Err-43: 5V Supply Failure
+- **Definition:** 5V Supply for Analog Signal Missing
+- **Occurrence Condition:** Line contactor not closed
+- **Troubleshooting:**
+  1. check for coil connections
+  2. check for rust
+  3. check the coil voltage
 
-### Issue-50: Main Contactor Did not Close
-- **Definition:** Line contactor open circuit - contactor did not close when the coil is energized.
-- **Cause:** When the contactor tip is oxidized or burnt; Battery connection issue.
-- **Troubleshooting:** Check line contactor operation and wiring; Check for Battery Power connections.
+## Err-44: Motor Temp Hot Cutback
+- **Definition:** Motor in thermal cutback
+- **Occurrence Condition:** SinCos Values out of range with warning
+- **Troubleshooting:**
+  1. Check for sincos sensor, wiring and encoder configuration
+  2. Check for wheel freeness.
 
-### Issue-51 & Issue-52: Throttle Wiper Faults
-- **Issue-51:** Throttle wiper High (Throttle signal voltage high as per define upper limit)
-- **Issue-52:** Throttle wiper Low (Throttle signal voltage low as per define low limit)
-- **Cause:** Throttle Wires are disconnected / shorted.
-- **Troubleshooting:** Check for wiring and configuration is correct or not. If analogue input is not used the range should be set to the minimum and maximum limits.
+## Err-45: Motor Temp Sensor Fault
+- **Definition:** Motor Temperature input not available
+- **Occurrence Condition:** Motor controller unable to maintain control of motor currents
+- **Troubleshooting:**
+  1. Check for motor cable and encoder connector wiring.
+  2. Motor characterisation to be done.
 
-### Issue-53: EEPROM Failure
+## Err-46: Main Contactor Open/Short
+- **Definition:** Line contactor not closed
+- **Occurrence Condition:** Line contactor appears to be closed when the coil is NOT energized
+- **Troubleshooting:** 1. Check line contactor hasn't welded / closed and the wiring is correct
+
+## Err-47: Sin/Cos Sensor Fault
+- **Definition:** SinCos Values out of range with warning
+- **Occurrence Condition:** Line contactor open circuit - contactor did not close when the coil is energized
+- **Troubleshooting:**
+  1. Check line contactor operation and wiring
+  2. Check for Battery Power connections
+
+## Err-48: Motor Phase Open
+- **Definition:** Motor controller unable to maintain control of motor currents
+- **Occurrence Condition:** Throttle signal voltage high as per define upper limit.
+- **Troubleshooting:** Check for wiring and configuration is correct or not. If analogue input is not used the range should be set to the minimum and maximum limits
+
+## Err-49: Main Contactor Welded
+- **Definition:** Line contactor appears to be closed when the coil is NOT energized
+- **Occurrence Condition:** Throttle signal voltage low as per define low limit.
+- **Troubleshooting:** Check for wiring and configuration is correct or not. If analogue input is not used the range should be set to the minimum and maximum limits
+
+## Err-50: Main Contactor Did not Close
+- **Definition:** Line contactor open circuit - contactor did not close when the coil is energized
+- **Occurrence Condition:** Bad NVM Data.
+- **Troubleshooting:** If firmware has recently been updated, revert to previous version. Contact Virya for support.
+
+## Err-51: Throttle wiper High
+- **Definition:** Throttle signal voltage high as per define upper limit.
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
+
+## Err-52: Throttle wiper Low
+- **Definition:** Throttle signal voltage low as per define low limit.
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
+
+## Err-53: EEPROM Failure
 - **Definition:** Bad NVM Data.
-- **Cause:** EEPROM or flash configuration data corrupted and data can not be recovered.
-- **Troubleshooting:** If firmware has recently been updated, revert to previous version. Contact Virya for support.
+- **Occurrence Condition:** NA
+- **Troubleshooting:** NA
 
-### Issue-54: VCL Run Time Issueor
-- **Troubleshooting:** If firmware has recently been updated, revert to previous version. Contact Virya for support.
+## Err-54: VCL Run Time Error
+- **Definition:** NA
+- **Occurrence Condition:** 1. During running, vehicle reached to low SOC.
+- **Troubleshooting:** NA
 
-### Issue-55: Motor Characterization fault
-- **Troubleshooting:** If firmware has recently been updated, revert to previous version. Contact Virya for support.
+## Err-55: Motor Characterization fault
+- **Definition:** NA
+- **Occurrence Condition:** 1. During running at higher SOC
+- **Troubleshooting:** NA
 
-### Issue-56: Encoder Pulse Count Fault
-- **Troubleshooting:** Check encoder wiring - especially shielding and routing of encoder cables. Encoder connector terminal PIN back out.
+## Err-56: Encoder Pulse Count Fault
+- **Definition:** NA
+- **Occurrence Condition:** 1. Short in Throttle, POT or Encoder Connection.
+- **Troubleshooting:** NA
 
-### Issue-57: Encoder LOS
+## Err-57: Encoder LOS
 - **Definition:** Encoder supply is disconnected.
-- **Cause:** Encoder input supply is disconnected or no supply from Controller due to wire cut.
-- **Troubleshooting:** Check encoder wiring - especially shielding and routing of encoder cables. Encoder connector terminal PIN back out.
+- **Occurrence Condition:** 
+  1. Encoder connector wire damaged or cut
+  2. Motor temperature resistor failure
+  3. Vehicle overloded
+- **Troubleshooting:** 
+  1. Check encoder wiring - especially shielding and routing of encoder cables.
+  2. Encoder connector terminal PIN back out.
 
-### Issue-58: Brake POT Engage
+## Err-58: Brake POT Engage
 - **Definition:** During drive, brake pot is applied.
-- **Cause:** When the Throttle is in active and the brake Pot is pressed.
-- **Troubleshooting:** Brake Pedal always to be in release condition during the throttle active.
+- **Occurrence Condition:** 
+  1. Encoder connector wire damaged or cut
+  2. Motor temperature resistor failure
+- **Troubleshooting:** Brake Pedal always to be in release condition during the throttle active
 
-### Issue-59: Brake POT fault
+## Err-59: Brake POT fault
 - **Definition:** Brake POT input voltage outside of configured range.
-- **Cause:** Brake Wires are disconnected / shorted.
-- **Troubleshooting:** Check for wiring and configuration is correct or not. If analogue input is not used the range should be set to the minimum and maximum limits.
+- **Occurrence Condition:** 
+  1. contactor coil connection issue
+  2. Contactor rust
+- **Troubleshooting:** Check for wiring and configuration is correct or not. If analogue input is not used the range should be set to the minimum and maximum limits
 
-### Issue-60: High Pedal Disable
+## Err-60: High Pedal Disable
 - **Definition:** Any drive switch or throttle will be in active at vehicle Power ON.
-- **Cause:** When the vehicle Power ON condition; When the Main Battery will switched OFF / ON.
-- **Troubleshooting:** Put the drive switch to N position. Release the Throttle before turning ON.
-
-## Part 3: Vehicle System Information
-
-### Vehicle Start Sequencing
-- **Battery Start Sequence:** Batt 6W Connector Pin no 1 to Emergency Switch Input
-- **MCU Start Sequence:** Junction Box to Pin no 2 at 16 Pin Connector
-- **MCU to Component Connection:** From 16 pin Connector to various components (Throttle, Brake, CAN, etc.)
-
-### Component Operating Voltage Range
-- **Battery KSI (Exicom, Amaron):** 48V
-- **Battery KSI (Exponent, Sun Mobility, Clean):** PCB Voltage / 12V
-- **MCU KSI:** 48V Operated
-- **Throttle:** Working on 5V Supply, Idle Signal 0.8-0.9V
-- **Brake Pot:** Working on 5V Supply, Signal Fix Between to 0.6V-0.8V
-- **BFNR Switch:** 12V Supply
-- **CAN Line (High/Low):** 2.5V-3.5V / 1.5-2.5V
-- **CAN Termination (MCU/Cluster Side):** 120 Ohm
-
-### Relay Usage
-- **CDIL Relay:** 48V Relay For Immobilize MC
-- **Aux Charging relay:** 48V Relay For Aux Battery Charging
-- **Key Base Relay:** 48V Relay For common Aux Battery
-- **Reverse Relay:** 12V Micro Relay For Reverse Light
-
-### Wiring Harness Architecture (As Per AIS 156)
-If there is any malfunction, thermal event, voltage/temperature abnormality in the pack, the Cluster should be on so that Driver can see the Issueor.
-- **Basic Setup:** Aux Battery -> Fuse Box -> Emergency Switch -> Ignition Switch
-
-*Diagrams describe relay connections for MCU, Cluster, DC Convertor, Contactor, and Regen functions.*
+- **Occurrence Condition:** 
+  1. Encoder wires damaged / Pin back out
+  2. Wheels are Jammed
+- **Troubleshooting:**
+  1. Put the drive switch to N position.
+  2. Release the Throttle before turning ON
 `;
 
 export const matelEvKnowledgeBase: StoredFile[] = [
@@ -564,9 +641,9 @@ export const matelEvKnowledgeBase: StoredFile[] = [
     lastModified: Date.now() - 1, // ensure it's slightly different
   },
   {
-    name: 'MATEL-Issueor-Diagnostic-Guide.md',
+    name: 'ErrorCode-Diagnostic-Document.md',
     content: IssueorDiagnosticDocumentContent,
     size: IssueorDiagnosticDocumentContent.length,
     lastModified: Date.now() - 2,
-  }
+  },
 ];
