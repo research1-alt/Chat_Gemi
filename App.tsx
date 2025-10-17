@@ -23,18 +23,49 @@ type User = {
 };
 
 const App: React.FC = () => {
-  // --- State Initialization ---
-  const [view, setView] = useState<'intro' | 'auth' | 'chat'>('intro');
-  const [user, setUser] = useState<User | null>(null);
+  // --- State Initialization with persistence ---
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const item = localStorage.getItem('currentUser');
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage:", error);
+      return null;
+    }
+  });
+
+  const [view, setView] = useState<'intro' | 'auth' | 'chat'>(() => {
+    if (localStorage.getItem('currentUser')) {
+      return 'chat';
+    }
+    try {
+      const savedView = sessionStorage.getItem('app-view');
+      if (savedView && JSON.parse(savedView) === 'auth') {
+        return 'auth';
+      }
+    } catch {
+      // Ignore parsing errors for sessionStorage
+    }
+    return 'intro';
+  });
+
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    const savedMessages = sessionStorage.getItem('app-messages');
-    return savedMessages ? JSON.parse(savedMessages) : [];
+    try {
+        const savedMessages = sessionStorage.getItem('app-messages');
+        return savedMessages ? JSON.parse(savedMessages) : [];
+    } catch {
+        return [];
+    }
   });
   const [isLoading, setIsLoading] = useState(false);
   const [knowledgeBase, setKnowledgeBase] = useState<{ content: string; fileCount: number } | null>(null);
   const [language, setLanguage] = useState(() => {
-    const savedLang = sessionStorage.getItem('app-language');
-    return savedLang ? JSON.parse(savedLang) : 'en-US';
+    try {
+        const savedLang = sessionStorage.getItem('app-language');
+        return savedLang ? JSON.parse(savedLang) : 'en-US';
+    } catch {
+        return 'en-US';
+    }
   });
   const [isAppLoading, setIsAppLoading] = useState(true);
 
@@ -86,40 +117,24 @@ const App: React.FC = () => {
     });
   }, [loadKnowledgeBase]);
 
-  // --- Effect to run on initial application load ---
+  // --- Effect to run on initial application load for async tasks ---
   useEffect(() => {
     const initializeApp = async () => {
-        // 1. Seed database with default file if library is empty
-        try {
-            const existingFiles = await getAllFiles();
-            if (existingFiles.length === 0) {
-                console.log("Knowledge base is empty. Seeding with default MATEL EV guide...");
-                for (const file of matelEvKnowledgeBase) {
-                    await addFile(file);
-                }
-                console.log("Default knowledge base seeded successfully.");
-            }
-        } catch (error) {
-            console.error("Failed to seed the database:", error);
+      // User & View state are already initialized synchronously.
+      // This effect now only handles async tasks like DB seeding.
+      try {
+        const existingFiles = await getAllFiles();
+        if (existingFiles.length === 0) {
+          console.log("Knowledge base is empty. Seeding with default MATEL EV guide...");
+          for (const file of matelEvKnowledgeBase) {
+            await addFile(file);
+          }
+          console.log("Default knowledge base seeded successfully.");
         }
-
-        // 2. Check for a logged-in user
-        const loggedInUserJson = localStorage.getItem('currentUser');
-        if (loggedInUserJson) {
-            const loggedInUser = JSON.parse(loggedInUserJson);
-            setUser(loggedInUser);
-            setView('chat');
-        } else {
-            const savedView = sessionStorage.getItem('app-view');
-            if(savedView) {
-                const parsedView = JSON.parse(savedView);
-                if (parsedView === 'auth') {
-                    setView('auth');
-                }
-            }
-        }
-        
-        setIsAppLoading(false);
+      } catch (error) {
+        console.error("Failed to seed the database:", error);
+      }
+      setIsAppLoading(false);
     };
     initializeApp();
   }, []);
@@ -167,12 +182,13 @@ const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { text: botResponseText, suggestions } = await getChatbotResponse(messageText, messages, knowledgeBase?.content ?? null, lang);
+      const { text: botResponseText, suggestions, imageUrl } = await getChatbotResponse(messageText, messages, knowledgeBase?.content ?? null, lang);
       const newBotMessage: ChatMessage = {
         id: `bot-${Date.now()}`,
         text: botResponseText,
         sender: 'bot',
         suggestions: suggestions,
+        imageUrl: imageUrl ?? undefined,
       };
       setMessages(prevMessages => [...prevMessages, newBotMessage]);
     } catch (error) {
@@ -224,12 +240,11 @@ const App: React.FC = () => {
     )
   }
 
-  if (view === 'intro') {
+  if (!user) {
+    if (view === 'auth') {
+        return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+    }
     return <IntroPage onStart={() => setView('auth')} />;
-  }
-  
-  if (view === 'auth') {
-    return <AuthPage onAuthSuccess={handleAuthSuccess} />;
   }
 
   return (

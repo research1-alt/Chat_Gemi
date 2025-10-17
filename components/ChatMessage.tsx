@@ -73,6 +73,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, language, onSuggesti
                     : 'bg-gray-200 text-gray-800 rounded-bl-none'
                 }`}
             >
+                {message.imageUrl && (
+                    <div className="mb-2 border-b border-gray-300 pb-2">
+                        <img 
+                            src={message.imageUrl} 
+                            alt="Generated Diagram" 
+                            className="rounded-md max-w-full h-auto bg-white" 
+                        />
+                    </div>
+                )}
                 <p className="whitespace-pre-wrap">{message.text}</p>
                 {!isUser && message.id !== 'initial-bot-message' && !message.id.startsWith('system-') && (
                     <button 
