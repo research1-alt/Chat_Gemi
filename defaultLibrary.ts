@@ -149,77 +149,6 @@ This document is a comprehensive guide based on the official MATEL electric vehi
 - With all components connected, the total bus resistance should measure ~60 Ohms.
 `;
 
-const howToTestRelayContent = `
-# How to Test a 5-Pin Automotive Relay
-
-This guide provides a step-by-step procedure for testing a standard 12V, 5-pin automotive relay using a multimeter and a 12V power source.
-
-**Tools Needed:**
-- Digital Multimeter (DMM)
-- 12V Power Source (e.g., a car battery or a bench power supply)
-- Jumper Wires with alligator clips
-
-**Understanding the Pins:**
-A standard 5-pin relay has the following terminals:
-- **Pin 30:** Common contact. This is the pin that connects to either 87 or 87a.
-- **Pin 87:** Normally Open (NO) contact. Power flows to this pin from pin 30 when the relay is energized.
-- **Pin 87a:** Normally Closed (NC) contact. Power flows to this pin from pin 30 when the relay is *not* energized. This is the default path.
-- **Pin 86:** Control circuit positive. Connects to the 12V switch.
-- **Pin 85:** Control circuit ground.
-
----
-
-## Testing Procedure
-
-### Step 1: Test the Internal Resistor (Control Circuit)
-
-1.  Set your multimeter to the Ohms (Ω) setting, typically 200 or 2k.
-2.  Connect the multimeter probes to Pin 85 and Pin 86.
-3.  You should see a resistance reading, typically between 50 and 120 Ohms.
-    - **Result:** If you get a reading in this range, the coil inside the relay is likely good.
-    - **No Reading (OL / Open Loop):** The coil is broken. The relay is bad and must be replaced.
-    - **Zero Reading (or very close):** The coil is shorted. The relay is bad and must be replaced.
-
-### Step 2: Test the Normally Closed (NC) Circuit
-
-1.  Keep the multimeter in Ohms (Ω) or switch to Continuity mode (the one that beeps).
-2.  Connect the multimeter probes to Pin 30 and Pin 87a.
-3.  The multimeter should show continuity (a reading of 0 Ohms or very close to it, and a beep if in continuity mode).
-    - **Result:** This confirms the normally closed switch is working correctly.
-    - **No Continuity (OL):** The internal switch is broken. The relay is bad and must be replaced.
-
-### Step 3: Test the Switching Function (Applying Power)
-
-**SAFETY FIRST:** Be careful when working with a power source. Ensure your connections are secure and do not short the terminals.
-
-1.  Connect your 12V power source:
-    - Connect the **positive (+)** lead to Pin 86.
-    - Connect the **negative (-)** lead to Pin 85.
-2.  When you make the connection, you should hear a distinct "click" sound. This is the sound of the internal switch moving from pin 87a to pin 87.
-    - **No Click:** The relay is not energizing. The internal mechanism is stuck or the coil is faulty (even if it passed the resistance test). The relay is bad.
-3.  **While the relay is energized (power is applied):**
-    - Connect the multimeter probes (still in continuity mode) to Pin 30 and Pin 87.
-    - You should now have continuity (0 Ohms / beep).
-    - **Result:** This confirms the normally open switch is working correctly.
-    - **No Continuity (OL):** The switch contacts are bad. The relay is faulty.
-4.  **While the relay is still energized:**
-    - Re-check the connection between Pin 30 and Pin 87a.
-    - There should now be **NO** continuity (OL / Open Loop).
-    - **Result:** This confirms the switch has successfully disconnected from the normally closed contact.
-    - **Continuity remains:** The switch is stuck or welded. The relay is bad.
-
----
-
-**Summary of a GOOD Relay:**
-- Passes the coil resistance test (50-120Ω).
-- Has continuity between 30 and 87a when *off*.
-- Clicks when power is applied to 85 and 86.
-- Has continuity between 30 and 87 when *on*.
-- Has NO continuity between 30 and 87a when *on*.
-
-If the relay fails any of these tests, it should be replaced.
-`;
-
 const IssueorDiagnosticDocumentContent = `
 # Error - Diagnostic Document
 
@@ -633,12 +562,6 @@ export const matelEvKnowledgeBase: StoredFile[] = [
     content: matelEvContent,
     size: matelEvContent.length,
     lastModified: Date.now(),
-  },
-  {
-    name: 'How-To-Test-A-Relay.md',
-    content: howToTestRelayContent,
-    size: howToTestRelayContent.length,
-    lastModified: Date.now() - 1, // ensure it's slightly different
   },
   {
     name: 'ErrorCode-Diagnostic-Document.md',

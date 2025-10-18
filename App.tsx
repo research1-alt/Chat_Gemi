@@ -5,7 +5,7 @@ import IntroPage from './components/IntroPage';
 import AuthPage from './components/AuthPage';
 import { ChatMessage } from './types';
 import { getChatbotResponse } from './services/geminiService';
-import { getAllFiles, addFile } from './utils/db';
+import { getAllFiles } from './utils/db';
 import { matelEvKnowledgeBase } from './defaultLibrary';
 
 const languageOptions = {
@@ -67,7 +67,6 @@ const App: React.FC = () => {
         return 'en-US';
     }
   });
-  const [isAppLoading, setIsAppLoading] = useState(true);
 
   const handleFileError = useCallback((errorMessage: string) => {
     console.error(`File Error: ${errorMessage}`);
@@ -83,11 +82,14 @@ const App: React.FC = () => {
   const loadKnowledgeBase = useCallback(async () => {
     try {
         const allDbFiles = await getAllFiles();
-        if (allDbFiles.length > 0) {
-            const combinedContent = allDbFiles
+        // If the user has uploaded files, use them. Otherwise, fall back to the default library.
+        const filesToLoad = allDbFiles.length > 0 ? allDbFiles : matelEvKnowledgeBase;
+
+        if (filesToLoad.length > 0) {
+            const combinedContent = filesToLoad
                 .map(f => `--- Content from ${f.name} ---\n${f.content}`)
                 .join('\n\n');
-            setKnowledgeBase({ content: combinedContent, fileCount: allDbFiles.length });
+            setKnowledgeBase({ content: combinedContent, fileCount: filesToLoad.length });
         } else {
             setKnowledgeBase(null);
         }
@@ -99,7 +101,7 @@ const App: React.FC = () => {
   }, [handleFileError]);
 
   const startChatSession = useCallback(async () => {
-    await loadKnowledgeBase(); // Refresh knowledge base from DB
+    await loadKnowledgeBase(); // Refresh knowledge base from DB or use default
 
     setMessages(prevMessages => {
         if (prevMessages.length === 0 || prevMessages.every(m => m.id.startsWith('system-'))) {
@@ -117,27 +119,6 @@ const App: React.FC = () => {
     });
   }, [loadKnowledgeBase]);
 
-  // --- Effect to run on initial application load for async tasks ---
-  useEffect(() => {
-    const initializeApp = async () => {
-      // User & View state are already initialized synchronously.
-      // This effect now only handles async tasks like DB seeding.
-      try {
-        const existingFiles = await getAllFiles();
-        if (existingFiles.length === 0) {
-          console.log("Knowledge base is empty. Seeding with default MATEL EV guide...");
-          for (const file of matelEvKnowledgeBase) {
-            await addFile(file);
-          }
-          console.log("Default knowledge base seeded successfully.");
-        }
-      } catch (error) {
-        console.error("Failed to seed the database:", error);
-      }
-      setIsAppLoading(false);
-    };
-    initializeApp();
-  }, []);
 
   // --- Effect to Persist State ---
   useEffect(() => {
@@ -227,18 +208,6 @@ const App: React.FC = () => {
   const handleLanguageChange = useCallback((lang: string) => {
     setLanguage(lang);
   }, []);
-
-  if (isAppLoading) {
-    return (
-        <div className="h-screen w-screen flex items-center justify-center text-gray-600">
-            <svg className="animate-spin h-8 w-8 mr-3 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Initializing Assistant...
-        </div>
-    )
-  }
 
   if (!user) {
     if (view === 'auth') {
