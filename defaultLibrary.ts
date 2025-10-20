@@ -639,6 +639,6 @@ export const matelEvKnowledgeBase: StoredFile[] = [
     name: 'ErrorCode-Diagnostic-Document.md',
     content: IssueorDiagnosticDocumentContent,
     size: IssueorDiagnosticDocumentContent.length,
-    lastModified: Date.now(),
+    lastModified: Date.now() - 2,
   },
 ];
