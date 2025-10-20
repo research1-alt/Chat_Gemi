@@ -173,6 +173,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                 Back to Login
             </button>
         </p>
+        <p className="text-xs text-gray-500 mt-8 text-center">
+          Last code update: {new Date().toLocaleString()}
+        </p>
     </div>
   );
 
@@ -255,6 +258,9 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
           <button onClick={toggleView} className="ml-1 font-medium text-green-600 hover:text-green-500">
             {viewMode === 'login' ? 'Sign Up' : 'Login'}
           </button>
+        </p>
+        <p className="text-xs text-gray-500 mt-8 text-center">
+          Last code update: {new Date().toLocaleString()}
         </p>
       </div>
   );

@@ -25,6 +25,9 @@ const IntroPage: React.FC<IntroPageProps> = ({ onStart }) => {
         >
           Get Started
         </button>
+        <p className="text-xs text-gray-500 mt-8">
+          Last code update: {new Date().toLocaleString()}
+        </p>
       </div>
     </div>
   );

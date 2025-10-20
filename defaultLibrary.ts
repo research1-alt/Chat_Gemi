@@ -154,8 +154,6 @@ const IssueorDiagnosticDocumentContent = `
 
 This document provides a comprehensive list of error codes, their descriptions, definitions, occurrence conditions, and troubleshooting steps.
 
----
-
 ## Err-01: Battery Fault
 - **Definition:** Battery common fault.
 - **Occurrence Condition:** 
@@ -233,7 +231,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
   1. Check Regen Current Value.
   2. After Charging Hold the Vehicle For Some Time.It will be normal after Some Time."
 
-
 ## Err-08: Battery Under Voltage
 - **Definition:** Battery voltage has dropped below safe range.
 - **Occurrence Condition:** 
@@ -241,7 +238,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
   2. Less Battery Remaining.
 - **Troubleshooting:** 
   1. Charge the Battery Pack.
-.
 
 ## Err-09: Battery Severe Under Voltage
 - **Definition:** Battery voltage is far below the critical limit.
@@ -250,7 +246,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
 - **Troubleshooting:** 
   1.Try to Charge the Battery Pack. 
   If not Charging Update to supplier or Charge using slow Charger."
-
 
 ## Err-10: MOSFET Failure
 - **Definition:** Power MOSFET (used in BMS/inverter) stops working due to short circuit, open circuit, or thermal damage.
@@ -266,7 +261,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
 - **Troubleshooting:** 
   1. Remove all the connection. 
   2. Turn on Battery Separtely. If still getting Error, Update to Supplier."
-
 
 ## Err-12: Severe DockPos Temperature
 - **Definition:** Bus Bar High Temp (+ve)
@@ -341,7 +335,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
   1. Stop the Vehicle for Some time and Check Battery Voltage is going to down or not.
   2. If temp is still same, update to supplier."
 
-
 ## Err-28: Battery Thermal Runaway
 - **Definition:** As per the Battery Condition
 - **Occurrence Condition:** 
@@ -378,8 +371,7 @@ This document provides a comprehensive list of error codes, their descriptions, 
   4. Check for freeness of wheels ,If not rotating freely ,Make it free
   5. Check the motor shaft for its free rotation.-If Motor shaft is Jammed - Replace the Motor.
   6. If you check everything is clear but still getting the error, Immerdiatly update to supplier.
-    
-
+  
 ## Err-32: Current Sensor Fault
 - **Definition:** Current sensor auto-zero value outside of allowed range
 - **Occurrence Condition:** 
@@ -413,7 +405,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
   1. check for Heat Sink is covered with dirt/Mud- Clean Heat Sink.
   2. check for Heat sink is properly mounted
   3. Remove the Additional Load and allow the controller to cool down"
-
 
 ## Err-36: Severe B+ Undervoltage
 - **Definition:** MCU Voltage is far below the critical limit.
@@ -484,7 +475,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
   1. Check the voltage between Pin 1 & 5 of  Encoder Connector
   2. Check for short in Brake POT or Throttle connection"
 
-
 ## Err-44: Motor Temp Hot Cutback
 - **Definition:** Motor in thermal cutback
 - **Occurrence Condition:** 
@@ -515,7 +505,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
   2. check for rust
   3. check the coil voltage"
 
-
 ## Err-47: Sin/Cos Sensor Fault
 - **Definition:** SinCos Values out of range with warning
 - **Occurrence Condition:**
@@ -526,7 +515,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
   1. Check for sincos sensor, wiring and encoder configuration
   2. Check for wheel freeness."
 
-
 ## Err-48: Motor Phase Open
 - **Definition:** Motor controller unable to maintain control of motor currents
 - **Occurrence Condition:** 
@@ -536,7 +524,6 @@ This document provides a comprehensive list of error codes, their descriptions, 
 - **Troubleshooting:** 
   1. Check for motor cable and encoder connector wiring.
   2. Motor characterisation to be done."
-
 
 ## Err-49: Main Contactor Welded
 - **Definition:** Line contactor appears to be closed when the coil is NOT energized
