@@ -53,10 +53,17 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
     if (!validateAuthForm()) return;
 
     setIsLoading(true);
+
+    const adminEmail = 'Research1@omegaseikimobility.com';
+    const adminPassword = 'Arvind@1223';
     
     setTimeout(() => {
         try {
             if (viewMode === 'login') {
+                if (email === adminEmail && password === adminPassword) {
+                    onAuthSuccess({ name: 'Admin', email: adminEmail });
+                    return;
+                }
                 const users = JSON.parse(localStorage.getItem('users') || '[]');
                 const foundUser = users.find(
                     (user: any) => user.email === email && user.password === password
@@ -67,6 +74,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                     setError('Invalid email or password.');
                 }
             } else { // signup
+                if (email === adminEmail) {
+                    setError('This email address is reserved. Please use a different one.');
+                    setIsLoading(false);
+                    return;
+                }
                 const users = JSON.parse(localStorage.getItem('users') || '[]');
                 const existingUser = users.find((user: any) => user.email === email);
                 if (existingUser) {

@@ -26,16 +26,16 @@ const App: React.FC = () => {
   // --- State Initialization with persistence ---
   const [user, setUser] = useState<User | null>(() => {
     try {
-      const item = localStorage.getItem('currentUser');
+      const item = sessionStorage.getItem('currentUser');
       return item ? JSON.parse(item) : null;
     } catch (error) {
-      console.error("Failed to parse user from localStorage:", error);
+      console.error("Failed to parse user from sessionStorage:", error);
       return null;
     }
   });
 
   const [view, setView] = useState<'intro' | 'auth' | 'chat'>(() => {
-    if (localStorage.getItem('currentUser')) {
+    if (sessionStorage.getItem('currentUser')) {
       return 'chat';
     }
     try {
@@ -138,14 +138,13 @@ const App: React.FC = () => {
   }, [view, user, startChatSession]);
 
   const handleAuthSuccess = (authenticatedUser: User) => {
-    localStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
+    sessionStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
     setUser(authenticatedUser);
     setView('chat');
   };
 
   const handleLogout = () => {
-      localStorage.removeItem('currentUser');
-      sessionStorage.clear();
+      sessionStorage.clear(); // Clears all session data including currentUser
       setUser(null);
       setMessages([]);
       setKnowledgeBase(null);
