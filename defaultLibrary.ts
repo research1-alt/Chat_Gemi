@@ -25,55 +25,98 @@ This document is a comprehensive guide based on the official MATEL electric vehi
 - **CAN High:** Yellow
 - **CAN Low:** Green
 - **Signals:**
-- **Cluster Delay:** Dedicated signal for cluster timing
-- **5V Supply:** Low voltage supply for sensors
+- Cluster Types
+   We are using two types of clusters in our system:
+  1. Sloki Cluster
+   Features:
+   1- Additional sensing for 12V input
+   2- In-built delay option — allows delaying DC output and main battery ignition
+   3- Designed for advanced applications requiring controlled startup timing
+  2. Virya Cluster
+   Features:
+   1- Basic functionality and tail-tail indicators
+   2- Suitable for standard monitoring and basic signaling requirements
 
 ---
 
 ## 2. Relay Specifications and Functions
+### Basic Relay Function (12V, 5-Pin)
+- Puspose:Uses for Switching Power Supply in Circuit.
+-Pin Uses: 86, 85, 87, 87a, 30.
+-Connections:
+ -Pin No 85:Coil Ground 
+ -Pin No 86:Coil Power 
+ -Pin No 87, 87a, 30: Switching Points of Relays
+ -Function/Working:
+   1- If Coil have no Power - 87a and 30 Normally Connected, 87 and 30 Normally open.
+   2- If Coil have Power - 87 and 30 Normally Connected, 87a and 30 Normally open. 
 
-### Cluster Relay (12V, 5-Pin)
-- **Purpose:** Controls power to the instrument cluster.
-- **Ignition On:** Energized by Ignition Switch (Pin 3). Connects pin 87 to 30, powering the cluster.
-- **Charging:** Receives power on pin 87a from the DC Convertor, which is then routed to pin 30 to power the cluster.
-- **Connections:**
-  - **Pin 30:** Output to Cluster Meter (White/Red)
-  - **Pin 87a:** Input from DC Convertor during charging (Yellow)
-  - **Pin 86:** Input from Ignition Switch (Pink/Yellow)
-  - **Pin 85:** Common Ground
+### Cluster Relay (12V, 5-Pin) (AS PER AIS 156)
+- Purpose: Controls power to the instrument cluster.
+- Connections: 
+   1- Pin 30:- Output to Cluster Meter (White/Red)
+   2- Pin 87a:- Input from DC output Relay during charging (Yellow)
+   3- Pin 86:- Input from Ignition Switch (Pink/Yellow) Form Pin no 3
+   4- Pin 85:- Common Ground (Always Comes)
+   5- Pin 87:- 12V Supply From Ignition Switch Pin No 3
+- Working Oeration:
+   1-Ignition On:- 12V Supply Comes from Ignition Switch Pin no 3 to Relay Pin no 86 and 87.Relay Pin no 85 have Common grond. So When we turn on the Key Relay goes Energized and 12V Supplys goes to Cluster From Relay Pin no 30.
+   2 Charging:- During the Charging time Ignition key is off so 12V Supply comes form DC Output Relay pin no 87a to Cluster relay pin no 87a. In this Condition Ignition Switch is off so this 12V Supply Directly goes to Cluster From Cluster Relay Pin no 30.
+  Note:- This Relay Circuit Belong to only Virya Gen2 and Matel.
 
 ### Reverse Relay (12V, 4-Pin)
 - **Purpose:** Activates the reverse tail lamp.
-- **Operation:** Ground signal from the BFNR (Mode) switch energizes the coil.
+- **Operation:** Ground signal from the BFNR (Mode) switch energizes the coil and Supply goes to reverse tail light.
 - **Connections:**
-  - **Pin 30:** Input from DC Output Relay (Yellow/Black)
-  - **Pin 87:** Output to Reverse Lamp (White)
-  - **Pin 86:** 12V from Ignition Switch (Yellow/Red)
-  - **Pin 85:** Ground from BFNR Switch (Red/Green)
+   1- Virya Gen1:-
+   - **Pin 30:** 12V Supply From DC Convertor
+   - **Pin 87:** Output to Reverse Lamp (White) by 48v12V Connctor
+   - **Pin 86:** 12V BFNR Switch During Reverse Mode(Red/Green)
+   - **Pin 85:** Connected to Common Ground
+   2- Virya Gen2:-
+   - **Pin 30:** 12V Supply From DC output Relay Pin no 30
+   - **Pin 87:** Output to Reverse Lamp (White) by 48v12V Connctor
+   - **Pin 86:** 12V Supply From Ignition Switch Pin no 3
+   - **Pin 85:** Ground From BFNR Switch during Reverse Mode through Dioade.
+      Note:- Ground Comes in Relay From BFNR Switch 1 Dioade is available in that route.
+   3- Matel:- No Relay Required
 
 ### 48V Battery Ignition Relay (R48VBatt) (12V, 4-Pin)
-- **Purpose:** Engages the main 48V battery.
+- **Purpose:** Engages the Main 48V battery.
 - **Operation:** When energized by the ignition switch, shorts the battery ignition wire to turn the main battery ON.
 - **Connections:**
-  - **Pin 30 & 87:** Connected to Batt 6W terminals.
+  - **Pin 30 & 87:** Connected to Batt 6W terminals pin no 1 & 3.
   - **Pin 86:** 12V from Ignition Switch Pin 3.
-  - **Pin 85:** Ground from Cluster Delay Pin 1.
+  - **Pin 85:** Ground from Cluster Delay Pin 1 (If Sloki Cluster used).Connected For Common ground(If Virya Cluster used).
+    Note:- Common Circuit For Virya Gen2 & Matel
 
-### MCU Relay (Virya Gen 2) (48V, 5-Pin)
-- **Purpose:** Controls the 48V wake-up power to the MCU.
-- **Operation:** Power is normally passed through (87a to 30). When ground is applied to Pin 85 (during charging or immobilization command), the relay activates and cuts power to the MCU.
-- **Connections:**
-  - **Pin 30:** 48V output to MCU wake-up (Orange)
-  - **Pin 87a & 86:** Looped; 48V input from FDCI fuse (Gray)
-  - **Pin 85:** Ground from Charging Cutoff or Telematics (Immobilizer)
+### MCU Relay 
+- Purpose: Controls the wake-up MCU.
+-  Connections:
+    1-Virya Gen2 (48V, 5Pin)
+  - Pin 30: 48V output to MCU wake-up (Orange)
+  - Pin 87a & 86: Looped; 48V input from FDCI fuse (Gray)
+  - Pin 85: Ground from Charging Cutoff or Telematics (Immobilizer)
+    2-Matel (12V, 5Pin)
+  - Pin 87a: 12V output to MCU wake-up (Orange)
+  - Pin 30 & 86: Looped; 12V input from Ignition Switch Pin no 2.
+  - Pin 85: Ground from Charging Cutoff or Telematics (Immobilizer)
+-   Operation: 
+    1- During Drive/Ignition ON, Relay is off Because relay coil ground missing, and supply goes to MCU.
+    2- During Charging or Immobalize (IOT) relay coil gets ground, so Relay gets on and Cutt the wake up supply to MCU (Only for Virya Gen2). For Matel relay don't have 12V Supply in coil so relay didn't getting on During Charging, Relay only getting on in time of Immobalize command through IOT.
+
 
 ### DC Output Relay (RDC_Output) (12V, 5-Pin)
 - **Purpose:** Distributes 12V power from the DC-DC converter to components and the Aux battery.
 - **Connections:**
-  - **Pin 30:** Input from DC Convertor (via F12V fuse)
-  - **Pin 87:** Output to 12V components & Aux Battery charging
-  - **Pin 87a:** Output to Cluster Relay for charging time
-  - **Pin 86:** 12V from Ignition Switch
+  - 1- Pin 30:- 12V Input from DC Convertor (via F12V fuse)
+  - 2- Pin 87:- 12V Output to 12V components & Aux Battery charging
+  - 3- Pin 87a:- 12V Output to Cluster Relay for charging time.
+  - 4- Pin 86:- 12V from Ignition Switch Pin no 2.
+  - 5- Pin 85:- For Virya Gen 2, This pin Connected to Common Ground(Virya Cluster). For Matel This Pin Connected to Cluster delay pin no 2(If we are using Sloki Cluster).
+    Operation: 
+     1- During Vehicle On:- Relay gets on and Give 12V supply to 12V Component also Charge 12V Aux Battery.
+     2- During Vehicle Charging:- Relay Cann't gettin on Because 12v Supply for coil missing so DC Output supply goes to Cluster from Pin no 87a of Relay.Also during charging 12V Component is not getting on.
 
 ### Aux Battery Charging Relay (48V, 5-Pin)
 - **Purpose:** Manages charging of the 12V Aux battery from the 48V system.
@@ -81,18 +124,18 @@ This document is a comprehensive guide based on the official MATEL electric vehi
 - **Connections:**
   - **Pin 30:** Output to DC Convertor input
   - **Pin 87:** Output to Aux Battery (via 7.5A fuse)
-  - **Pin 86:** 48V input from terminal box
-  - **Pin 85:** Ground from Charging Cutoff Pin 2
+  - **Pin 86:** 48V input from terminal box Via Fuse Box.
+  - **Pin 85:** Ground from Charging Cutoff Connector Pin 2.
 
 ### Regen Relay (12V, 5-Pin)
 - **Purpose:** During Regen Activation Brake Light should be glow.
 - **Operation: Activate When Regen Activated During Vehicle Running.
 - **Connections:
-   **Pin 30:** 12Volt, Output to Brake Light 
-   **Pin No:** 12Volt Input From Ignition Switch
-   **Pin 86:** 12Volt Input From Ignition Switch
+   **Pin 30:** 12Volt, Output to Brake Light Via 48V12V Connector
+   **Pin 87:** 12Volt Input From Ignition Switch Pin no 2
+   **Pin 86:** 12Volt Input From Ignition Switch Pin no 2
    **Pin 85:** Ground Signal From VCU From Pin no 4
- 
+   Note- This Relay used only in Matel
 ---
 
 ## 3. Fuses, Switches, and Diodes
@@ -139,14 +182,71 @@ This document is a comprehensive guide based on the official MATEL electric vehi
 ## 5. Operational Procedures & Notes
 
 ### Vehicle Start Sequence
-1. **Key Turn (Step 1):** Main 48V Battery turns ON. MCU remains OFF.
-2. **Key Turn (Step 2):** MCU turns ON.
-- **Important:** This sequence is critical for saving the odometer reading correctly. If the MCU and Battery turn on simultaneously, the reading may not be saved. This can indicate a faulty MCU relay.
-
+1. **Key Turn (Step 1):** Main 48V Battery turns ON. Cluster ON.
+2. **Key Turn (Step 2):** MCU turns ON. DC-output Relay On,Regen Relay got 12V, BFNR Switch got 12V (only in Matel)
+- **Important:** This sequence is critical for saving the odometer reading correctly. Main Battery Needs to Turn on at 1st Step of Ignition Switch and MCU Turn on in Second Step.So When we turn on the key First Main Battery getting on then MCU getting On in 2nd Step. But When we turn off the Key First MCU Gets off than Main Battery. If This function Works Properly, then Odometer reading will be saved.if Not then odometer reading not save.
+      If This sequence is not working properly Please check Main Battery and MCU Relay on Sequense.
 ### CAN Bus Notes
 - 120 Ohm termination resistors are located in the Cluster and MCU.
 - The battery and charger do not have termination.
 - With all components connected, the total bus resistance should measure ~60 Ohms.
+### Some Basic Issues and There solution
+  1- Vehicle is taking Throttle Response:- 
+   1- Check the Error Code in Cluster.If any clear that error.
+   2- If there is not any Error:- Check Drive mode Comes in cluster or Not. 
+   If Comes :- Then Check Throttle Input and Output Signal to MCU. Input have 5V and output have 0.8-1.1V Supply in Idle Condition.
+   If Throttle Input have Supply but output Don't have any Supply then Replace the Throttle and Check.
+   If Throttle Input and  Output Both Have Supply, then check Throttle output Supply in MCU side at given pin.IF MCU Got Throttle output signal but not responding. Update the supplier or replace the MCU and Check. Issue will be resolve.
+   If Not Comes:- Then Check Input supply it should be 12V For Matel and Ground For Virya Gen 2 and 12V For Virya Gen 1. If Comes then Put any Drive Mode and Check given pin at MCU Side. If got supply in MCU Side so there will be any issue in MCU, update to Supplier or Change MCU than test.It Should be work.
+  2- Vehicle Zerking:- 
+   1- During Drive:- Check all the Basic Things, Brake pot Output signal should be 0.6-0.8V. Throttle Signal not Verying During Drive. Also Please check the Wheel freensee it should be Free.
+   2- During Regen:- Check the regen Current Limit and Regen current Provided by MCU to Battery. MCU Needs to follow Regen Current limit given by Battery if not then update to supplier.
+   Note:- Do not Try to Drive Virya Gen2 Vehicle in Jack up Condition, Vehicle will be off after giving throttle (AS Per VIrya Team) also Do not Drive Vehicle More then 40KM at a single time(AS Per Virya Team). 
+  3- Matel MCU Pin Position:-
+    MCU 1:-
+    Pin no - Belongs to  
+      1- From Ignition (12V ) Operated
+      7- XGND (Ground)  to Encoder Pin no 1.
+      8- XGND (Ground) to Encoder Pin no 7.
+      10- From Ignition (12V) Operated 
+      11- Can High 
+      12- Can Low
+      15- Cos N to Encoder Pin no 4.
+      16- Cos P to Encoder Pin no 3.
+      17- Sin P to Encoder Pin no 5.
+      18- Sin N to Encoder Pin no 6.
+      19- XDRP (5V From MCU To Encoder) to Encoder Pin no 2.
+      20- Motor Temperature to Encoder Pin no 8.
+    Note:- Pin No 15,16,17,18,19,20,7,8 Belongs to MOTOR Encoder. These Wire Goes to MOTOR Encoder.
+    MCU 2:- 
+    Pin no - Belongs to
+      1- Reverse Mode 
+      2- Throttle First Signal 
+      3- Eco Mode
+      4- Ground From Controller to Regen Relay
+      6- Neutral Mode 
+      8- Boost Mode
+      9- XGND (Ground From Controller)
+      10- XDRP (5 V From Controller)
+      11- 2nd Throttle Signal 
+      12- Gradient Mode
+      14- Brake Pot Signal 
+    Note :- MCU1 & MCU2 Connector Pin Position as Per Printed over Connector. For Encoder Pin Position Counting From Right to Left Side 
+   4:- Important Notes:- 
+    1- There are 2 Step in Ignition Key, When we turn on Key That time Pin no 1 & Pin no 3 going to Short. When we turn on the Key that time Pin no 1, 2 & 3 get Short.
+    2- 120 Ohm Can Termination Available in Cluster and MCU. Battery don’t have any 120 Ohm Termination. Also, in Vehicle architecture all CAN included Cluster, MCU & Battery are parallel Connected. So, When we check CAN Termination along with the all Component Connected, we got 60-ohm termination. Charger don’t have any Can Termination.
+    3- If We are Charging our 48V Main Battery Pack without Connect to the Vehicle that time we need to Add 120 Ohm Resistance in Battery Can Line.
+    4- 120 ohm Can Resistance required if We Charge our main battery without connected to the Vehicle. Also Please ensure Vehicle can and Charger Can are Parallel Connected.
+    5- If we are Charging our 48V Main Battery in Vehicle that time 60 Ohm Resistance comes in can line. Also, all can lines are Parallelly connected.
+    6- For Matel Odometer Saving, Please Ensure
+      When we turn on 1st Step - 48V Main Battery need to ON also MCU Should not be turn on in 1st Step.
+      When we turn on 2nd step - 48V main Battery and MCU need to ON.
+      If this Function Miss match or Battery or MCU are getting on same time Odometer reading is not going to Save.
+      Ignition Switch include 2 step. 
+      For Checking Purpose Do one Thing Turn on key 1 step than check, only battery should be on. And when we do 2nd step that time MCU need to be ON. If Both are getting On at the same time, also check ignition switch pin no 2 & pin 3 have supply or not. It Pin no 2 & 3 Both have supply. Means may be that MCU relay creating issue so replace the relay and Check again.
+
+
+
 `;
 
 const IssueorDiagnosticDocumentContent = `
@@ -185,7 +285,7 @@ This document provides a comprehensive list of error codes, their descriptions, 
 
 - **Troubleshooting:** 
   Check Ambient Temp and Compare with Battrey temperature.
-  "1. Check Dishcarging current rate.If Found as per required that's ok.
+   1. Check Dishcarging current rate.If Found as per required that's ok.
    2. Replace the Battery Pack.
    3. Check and update to MCU Team.
    4. Update to supplier."
@@ -615,6 +715,54 @@ This document provides a comprehensive list of error codes, their descriptions, 
   2. Release the Throttle before turning ON
 `;
 
+const pcanToolContent = `
+# PCAN Tool Starting Process Guide
+
+This guide explains the step-by-step process for setting up and using the PCAN Tool for CAN bus monitoring and logging.
+
+## Step 1: Hardware Setup
+- Connect the CAN interface hardware (USB-to-CAN adapter or PCI card) to your PC.
+- Connect the CAN interface to the vehicle's CAN network or bench setup (via CAN_H and CAN_L lines).
+
+## Step 2: Launch the CAN Tool Software
+- Open the tool software (PCAN View).
+- Select the connected CAN interface from the hardware list.
+- **Image Description:** A screenshot of the PCAN-View software with a "Connect" dialog box open. The dialog shows a list of "Available PCAN Hardware and PCAN Nets". The item "PCAN-USB FD: Device ID 0h" is highlighted in the list, indicating it has been selected. To the right of the list are settings for CAN Setup. The main window behind the dialog is titled "PCAN-View" and has a "Receive" pane.
+
+## Step 3: Configure Communication Settings
+- Set the baud rate (commonly 500 kbps or 250 kbps for automotive).
+- Choose the protocol (CAN, CAN FD, J1939, etc.).
+- After setting the baud rate to 500 kbit/s, press 'Ok'.
+- **Image Description:** A screenshot of the "Connect" dialog in PCAN-View. Focus is on the "Nominal Bit Rate" section. The "Database Entry" dropdown is set to "500 kbit/s". Red lines are drawn to highlight this setting and the "OK" button, with text annotations saying "Baud rate t 500kbit/s Than Press Ok".
+
+## Step 4: Start Monitoring
+- Click "Start Measurement / Logging".
+- Monitor live CAN messages. The display shows columns for CAN-ID, Type, Length, Data, Cycle Time, and Count.
+- Use filters to focus on specific IDs if needed.
+- **Image Description:** A screenshot of the main PCAN-View window displaying live CAN message traffic. The window is filled with rows of data, each representing a CAN message. Columns are labeled: CAN-ID (e.g., "664h", "663h"), Type, Length (e.g., "8"), Data (e.g., "F4 74 79 22 38 00 00 00"), Cycle Time, and Count.
+
+## Step 5: Enable Logging
+- In the PCAN-View menu, go to "Trace" and select "Start Message Trace".
+- A dropdown menu appears from the "Trace" menu item.
+- Click the "Start Trace" button, which may look like a red record button.
+- All incoming CAN frames will now be saved to a file.
+- **Image Description:** A screenshot of PCAN-View with the "Trace" menu opened. The menu shows options like "Start", "Pause", "Stop", and "Save...". Below these are checkboxes for logging options like "Log Data Frames", "Log RTR", "Log Error Frames", etc. All are checked. A red circle icon for recording might be visible.
+
+## Step 6: Stop Logging
+- When you are finished logging, click "Stop Trace".
+- The log file is now saved.
+- This file can be opened in PCAN-View, Vector tools, or converted for further analysis.
+- **Image Description:** A screenshot of PCAN-View with the "Trace" menu open, similar to the previous step. The focus is on the "Stop" option, indicating that logging is in progress and can be stopped. The data grid continues to show CAN messages being received.
+
+## Step 7 & 8: Save File and Choose Location
+- After stopping the log, a "Save As" dialog will appear.
+- Enter a name for your log file.
+- Ensure you know the location where the file is being saved.
+- The file type is typically a Trace file (*.trc).
+- **Image Description:** A screenshot of the Windows "Save As" dialog. The dialog shows a folder structure, with the current location being "Local Disk (D:) > exicom charging > charging issue". A file name can be entered, and the "Save as type" is set to "Trace files (*.trc)". Buttons for "Save" and "Cancel" are at the bottom.
+`;
+
+
 export const matelEvKnowledgeBase: StoredFile[] = [
   {
     name: 'EV-Troubleshooting-Guide.md',
@@ -628,4 +776,10 @@ export const matelEvKnowledgeBase: StoredFile[] = [
     size: IssueorDiagnosticDocumentContent.length,
     lastModified: Date.now() - 2,
   },
+  {
+    name: 'PCAN-Tool-Guide.md',
+    content: pcanToolContent,
+    size: pcanToolContent.length,
+    lastModified: Date.now() - 4,
+  }
 ];

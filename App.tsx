@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import ChatWindow from './components/ChatWindow';
 import IntroPage from './components/IntroPage';
@@ -7,6 +6,7 @@ import { ChatMessage } from './types';
 import { getChatbotResponse } from './services/geminiService';
 import { getAllFiles } from './utils/db';
 import { matelEvKnowledgeBase } from './defaultLibrary';
+import useAuth, { User } from './hooks/useAuth';
 
 const languageOptions = {
     'en-US': 'English',
@@ -15,43 +15,21 @@ const languageOptions = {
     'ta-IN': 'Tamil (தமிழ்)',
     'kn-IN': 'Kannada (ಕನ್ನಡ)',
     'gu-IN': 'Gujarati (ગુજરાતી)',
-};
-
-type User = {
-  name: string;
-  email: string;
+    'mr-IN': 'Marathi (मराठी)',
+    'bn-IN': 'Bengali (বাংলা)',
+    'te-IN': 'Telugu (తెలుగు)',
+    'ml-IN': 'Malayalam (മലയാളം)',
+    'ur-IN': 'Urdu (اردو)',
+    'as-IN': 'Assamese (অসমীয়া)',
+    'or-IN': 'Odia (ଓଡ଼ିଆ)',
 };
 
 const App: React.FC = () => {
-  // --- State Initialization with persistence ---
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const item = sessionStorage.getItem('currentUser');
-      return item ? JSON.parse(item) : null;
-    } catch (error) {
-      console.error("Failed to parse user from sessionStorage:", error);
-      return null;
-    }
-  });
-
-  const [view, setView] = useState<'intro' | 'auth' | 'chat'>(() => {
-    if (sessionStorage.getItem('currentUser')) {
-      return 'chat';
-    }
-    try {
-      const savedView = sessionStorage.getItem('app-view');
-      if (savedView && JSON.parse(savedView) === 'auth') {
-        return 'auth';
-      }
-    } catch {
-      // Ignore parsing errors for sessionStorage
-    }
-    return 'intro';
-  });
+  const { user, view, setView, login, signup, logout, authError, isAuthLoading } = useAuth();
 
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
-        const savedMessages = sessionStorage.getItem('app-messages');
+        const savedMessages = localStorage.getItem('app-messages');
         return savedMessages ? JSON.parse(savedMessages) : [];
     } catch {
         return [];
@@ -61,7 +39,7 @@ const App: React.FC = () => {
   const [knowledgeBase, setKnowledgeBase] = useState<{ content: string; fileCount: number } | null>(null);
   const [language, setLanguage] = useState(() => {
     try {
-        const savedLang = sessionStorage.getItem('app-language');
+        const savedLang = localStorage.getItem('app-language');
         return savedLang ? JSON.parse(savedLang) : 'en-US';
     } catch {
         return 'en-US';
@@ -76,13 +54,11 @@ const App: React.FC = () => {
       text: `An error occurred: ${errorMessage}`,
     };
     setMessages(prev => [...prev, errorBotMessage]);
-    setView('chat'); // Show error in chat window
   }, []);
 
   const loadKnowledgeBase = useCallback(async () => {
     try {
         const allDbFiles = await getAllFiles();
-        // If the user has uploaded files, use them. Otherwise, fall back to the default library.
         const filesToLoad = allDbFiles.length > 0 ? allDbFiles : matelEvKnowledgeBase;
 
         if (filesToLoad.length > 0) {
@@ -101,7 +77,7 @@ const App: React.FC = () => {
   }, [handleFileError]);
 
   const startChatSession = useCallback(async () => {
-    await loadKnowledgeBase(); // Refresh knowledge base from DB or use default
+    await loadKnowledgeBase(); 
 
     setMessages(prevMessages => {
         if (prevMessages.length === 0 || prevMessages.every(m => m.id.startsWith('system-'))) {
@@ -120,35 +96,21 @@ const App: React.FC = () => {
   }, [loadKnowledgeBase]);
 
 
-  // --- Effect to Persist State ---
   useEffect(() => {
-    // Only persist view if it's not 'intro' to avoid getting stuck
-    if (view !== 'intro') {
-        sessionStorage.setItem('app-view', JSON.stringify(view));
-    }
-    sessionStorage.setItem('app-messages', JSON.stringify(messages));
-    sessionStorage.setItem('app-language', JSON.stringify(language));
-  }, [view, messages, language]);
+    localStorage.setItem('app-messages', JSON.stringify(messages));
+    localStorage.setItem('app-language', JSON.stringify(language));
+  }, [messages, language]);
   
-  // --- Effect to start chat session ---
   useEffect(() => {
     if (view === 'chat' && user) {
         startChatSession();
     }
   }, [view, user, startChatSession]);
 
-  const handleAuthSuccess = (authenticatedUser: User) => {
-    sessionStorage.setItem('currentUser', JSON.stringify(authenticatedUser));
-    setUser(authenticatedUser);
-    setView('chat');
-  };
-
   const handleLogout = () => {
-      sessionStorage.clear(); // Clears all session data including currentUser
-      setUser(null);
+      logout();
       setMessages([]);
       setKnowledgeBase(null);
-      setView('intro');
   }
 
   const handleSendMessage = useCallback(async (messageText: string, lang: string) => {
@@ -210,7 +172,14 @@ const App: React.FC = () => {
 
   if (!user) {
     if (view === 'auth') {
-        return <AuthPage onAuthSuccess={handleAuthSuccess} />;
+        return (
+          <AuthPage
+            onLogin={login}
+            onSignup={signup}
+            error={authError}
+            isLoading={isAuthLoading}
+          />
+        );
     }
     return <IntroPage onStart={() => setView('auth')} />;
   }

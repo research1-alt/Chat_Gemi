@@ -1,28 +1,34 @@
-import React, { useState } from 'react';
-
-type User = {
-  name: string;
-  email: string;
-};
+import React, { useState, useEffect } from 'react';
+import { AuthCredentials } from '../hooks/useAuth';
 
 interface AuthPageProps {
-  onAuthSuccess: (user: User) => void;
+  onLogin: (credentials: AuthCredentials) => Promise<void>;
+  onSignup: (credentials: AuthCredentials) => Promise<void>;
+  error: string | null;
+  isLoading: boolean;
 }
 
-const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onSignup, error: authError, isLoading }) => {
   const [viewMode, setViewMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
   const [retrievedPassword, setRetrievedPassword] = useState<string | null>(null);
+
+  // When the global authError changes, display it as the formError.
+  useEffect(() => {
+    if (authError) {
+        setFormError(authError);
+    }
+  }, [authError]);
 
   const clearForm = () => {
     setName('');
     setEmail('');
     setPassword('');
-    setError('');
+    setFormError('');
     setRetrievedPassword(null);
   };
 
@@ -33,94 +39,59 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
   
   const validateAuthForm = () => {
       if (viewMode === 'signup' && !name.trim()) {
-          setError('Name is required.');
+          setFormError('Name is required.');
           return false;
       }
       if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
-          setError('Please enter a valid email address.');
+          setFormError('Please enter a valid email address.');
           return false;
       }
       if (password.length < 6) {
-          setError('Password must be at least 6 characters long.');
+          setFormError('Password must be at least 6 characters long.');
           return false;
       }
-      setError('');
+      setFormError('');
       return true;
   }
 
   const handleAuthSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!validateAuthForm()) return;
+    setFormError(''); 
 
-    setIsLoading(true);
-
-    const adminEmail = 'Research1@omegaseikimobility.com';
-    const adminPassword = 'Arvind@1223';
+    const credentials = { name, email, password };
     
-    setTimeout(() => {
-        try {
-            if (viewMode === 'login') {
-                if (email === adminEmail && password === adminPassword) {
-                    onAuthSuccess({ name: 'Admin', email: adminEmail });
-                    return;
-                }
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-                const foundUser = users.find(
-                    (user: any) => user.email === email && user.password === password
-                );
-                if (foundUser) {
-                    onAuthSuccess({ name: foundUser.name, email: foundUser.email });
-                } else {
-                    setError('Invalid email or password.');
-                }
-            } else { // signup
-                if (email === adminEmail) {
-                    setError('This email address is reserved. Please use a different one.');
-                    setIsLoading(false);
-                    return;
-                }
-                const users = JSON.parse(localStorage.getItem('users') || '[]');
-                const existingUser = users.find((user: any) => user.email === email);
-                if (existingUser) {
-                    setError('An account with this email already exists.');
-                } else {
-                    const newUser = { name, email, password };
-                    users.push(newUser);
-                    localStorage.setItem('users', JSON.stringify(users));
-                    onAuthSuccess({ name, email });
-                }
-            }
-        } catch (e) {
-            setError("An unexpected error occurred. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    }, 500);
+    if (viewMode === 'login') {
+        onLogin(credentials);
+    } else {
+        onSignup(credentials);
+    }
   };
   
   const handleForgotSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!email.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
-        setError('Please enter a valid email address.');
+        setFormError('Please enter a valid email address.');
         return;
     }
-    setError('');
-    setIsLoading(true);
+    setFormError('');
+    setIsForgotLoading(true);
     setRetrievedPassword(null);
 
     setTimeout(() => {
         try {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const foundUser = users.find((user: any) => user.email === email);
+            const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const foundUser = storedUsers.find((user: any) => user.email === email);
+
             if (foundUser) {
                 setRetrievedPassword(foundUser.password);
             } else {
-                setError('No account found with this email address.');
+                setFormError('No account found with this email address.');
             }
         } catch (e) {
-            setError("An unexpected error occurred. Please try again.");
+            setFormError("An unexpected error occurred. Please try again.");
         } finally {
-            setIsLoading(false);
+            setIsForgotLoading(false);
         }
     }, 500);
   };
@@ -147,7 +118,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
                 />
             </div>
             
-            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+            {formError && <p className="text-sm text-red-600 text-center">{formError}</p>}
 
             {retrievedPassword && (
               <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
@@ -160,10 +131,10 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
             <div>
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isForgotLoading}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-wait"
                 >
-                  {isLoading ? 'Searching...' : 'Retrieve Password'}
+                  {isForgotLoading ? 'Searching...' : 'Retrieve Password'}
                 </button>
             </div>
         </form>
@@ -240,7 +211,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
             />
           </div>
           
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+          {formError && <p className="text-sm text-red-600 text-center">{formError}</p>}
 
           <div>
             <button

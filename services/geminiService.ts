@@ -1,5 +1,7 @@
-import { GoogleGenAI, type Content, Type, Modality } from "@google/genai";
+
+import { GoogleGenAI, type Content, Type, Modality, Part } from "@google/genai";
 import { ChatMessage } from '../types';
+import { relayBaseImageData } from '../utils/assets';
 
 const API_KEY = process.env.API_KEY;
 
@@ -16,6 +18,13 @@ const languageMap: { [key: string]: string } = {
     'ta-IN': 'Tamil',
     'kn-IN': 'Kannada',
     'gu-IN': 'Gujarati',
+    'mr-IN': 'Marathi',
+    'bn-IN': 'Bengali',
+    'te-IN': 'Telugu',
+    'ml-IN': 'Malayalam',
+    'ur-IN': 'Urdu',
+    'as-IN': 'Assamese',
+    'or-IN': 'Odia',
 };
 
 export async function getChatbotResponse(
@@ -51,7 +60,10 @@ Adhere to the following rules strictly:
 3. **Provide Step-by-Step Solutions:** If the context contains instructions, extract the solution steps. Present these as a clear, numbered list. Do not add information that is not in the provided documents.
 4. **Handle Missing Information:** If the query does not match any information in the knowledge base, state that the answer is not found in the provided documents and suggest checking the query or uploading a more relevant file.
 5. **Generate Relevant Suggestions:** The 'suggestions' should be other potential problems, topics, or part numbers from the documents that might be related to the user's original query.
-6. **Handle Diagram Requests:** If the user asks for a circuit diagram, schematic, or any visual representation of a component mentioned in the knowledge base, you MUST populate the 'diagramQuery' field with a detailed, descriptive prompt suitable for a text-to-image generation model. For example, if asked for the "cluster relay wiring diagram", a good query would be "A clear, labeled circuit diagram of a 5-pin automotive cluster relay. Show pin numbers 30, 87, 87a, 86, and 85 with connections for 'Cluster Meter', 'Ignition Switch', 'DC Convertor', and 'Ground'. Use standard electronic symbols.". Do not make up diagrams; base the description on the text in the knowledge base.`;
+6. **Handle Visual Requests:** If the user asks for a circuit diagram, a screenshot, a visual guide, or to see what a step looks like, check if the relevant section in the KNOWLEDGE BASE CONTEXT contains a line starting with "Image Description:".
+   - If an "Image Description:" is present, you MUST use the text that follows it to populate the 'diagramQuery' field. This provides a detailed prompt for a text-to-image generation model.
+   - If no "Image Description:" is found but the request is for a diagram mentioned in the text (like a relay), create a descriptive prompt for the 'diagramQuery' field based on the technical details available in the text. For example, for a "cluster relay wiring diagram", a good query is "A clear, labeled circuit diagram of a 5-pin automotive cluster relay...".
+   - Do not make up diagrams; the description must be based on the text in the knowledge base.`;
 
   const fullContents: Content[] = [
       ...geminiHistory,
@@ -81,7 +93,7 @@ Adhere to the following rules strictly:
                     },
                     diagramQuery: {
                         type: Type.STRING,
-                        description: "If the user requests a diagram, provide a detailed text-to-image prompt here. Otherwise, this field will be omitted."
+                        description: "If the user requests a diagram or visual, provide a detailed text-to-image prompt here. Otherwise, this field will be omitted."
                     }
                 },
                 required: ["response", "suggestions"]
@@ -100,11 +112,34 @@ Adhere to the following rules strictly:
     if (diagramQuery && typeof diagramQuery === 'string' && diagramQuery.trim() !== '') {
         try {
             console.log(`Generating image with prompt: "${diagramQuery}"`);
+            
+            let imageGenParts: Part[];
+
+            // Check if the query is for a relay diagram and if we have valid image data
+            if (/relay/i.test(diagramQuery) && relayBaseImageData) {
+                imageGenParts = [
+                    {
+                        inlineData: {
+                            mimeType: 'image/png',
+                            data: relayBaseImageData,
+                        },
+                    },
+                    {
+                        text: `Using the provided relay base image as a reference, create a wiring diagram for: ${diagramQuery}. Draw the connections on the base image, labeling all pins, components, and wire colors as described. Keep the original appearance of the relay base.`,
+                    }
+                ];
+            } else {
+                // Fallback for non-relay diagrams or if relay image data is missing
+                imageGenParts = [{ text: diagramQuery }];
+            }
+
             const imageResponse = await ai.models.generateContent({
                 model: 'gemini-2.5-flash-image',
-                contents: {
-                    parts: [{ text: diagramQuery }],
-                },
+                // The `contents` field expects an array of Content objects.
+                // By wrapping the parts in an object within an array, we ensure
+                // it conforms to the more robust Content[] format, which
+                // resolves the "INVALID_ARGUMENT" error.
+                contents: [{ parts: imageGenParts }],
                 config: {
                     responseModalities: [Modality.IMAGE],
                 },
