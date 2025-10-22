@@ -3,7 +3,7 @@ import { GoogleGenAI, type Content, Type, Modality, Part } from "@google/genai";
 import { ChatMessage } from '../types';
 import { relayBaseImageData } from '../utils/assets';
 
-const API_KEY = process.env.AIzaSyAHRe09FWac_2E3E5vyxKrYq-lfDjZbnls;
+const API_KEY = process.env.API_KEY;
 
 if (!API_KEY) {
   throw new Error("API_KEY environment variable not set.");
