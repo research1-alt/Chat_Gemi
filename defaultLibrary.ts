@@ -762,6 +762,62 @@ This guide explains the step-by-step process for setting up and using the PCAN T
 - **Image Description:** A screenshot of the Windows "Save As" dialog. The dialog shows a folder structure, with the current location being "Local Disk (D:) > exicom charging > charging issue". A file name can be entered, and the "Save as type" is set to "Trace files (*.trc)". Buttons for "Save" and "Cancel" are at the bottom.
 `;
 
+const viryaGen2PinoutContent = `
+# Virya Gen 2: E-Box Assembly Pin Configurations
+
+This document details the pin configurations for the new and improved powertrain kit E-Box assembly.
+
+- **Connector Make:** Ampseal, TE Connectivity
+- **Connector Part Number:** 770680-1
+- **Image Description:** A schematic diagram of a 23-pin Ampseal automotive connector, part number 770680-1, viewed from the wire insertion side. The pins are numbered 1 through 23 in their respective positions within the connector housing.
+
+---
+
+## E-Box Connector Pin Descriptions
+
+| Pin Descriptions                  | Pin Details | Input / Output Supply Details               |
+| --------------------------------- | ----------- | ------------------------------------------- |
+| Controller Input Supply - Main    | 1           | 48V from Terminal Block / Connector         |
+| Controller Input Supply - Interlock | 2           | 48V from Terminal Block / Connector         |
+| CAN HIGH                          | 3           | Controller Software Flashing & Diagnosis    |
+| CAN LOW - Controller              | 4           | Controller Software Flashing & Diagnosis    |
+| FORWARD Switch I/P                | 5           | 48V B-                                      |
+| BOOST Switch I/P                  | 6           | 48V B-                                      |
+| REVERSE Switch I/P                | 7           | 48V B-                                      |
+| Throttle and Footbrake Supply     | 8           | 5V from Controller                          |
+| Throttle Pot -Wiper               | 9           | To Controller                               |
+| Brake Pot -Wiper                  | 10          | To Controller                               |
+| CAN HIGH                          | 11          | Vehicle Communication                       |
+| CAN LOW                           | 12          | Vehicle Communication                       |
+| Encoder Power Supply              | 13          | 5V from Controller                          |
+| Motor Thermistor                  | 14          | To Controller                               |
+| Encoder Sine                      | 15          | To Controller                               |
+| Encoder Cosine                    | 16          | To Controller                               |
+| Encoder 0V                        | 17          | 5V GND from Controller                      |
+| Encoder Cable Shield              | 23          | Not applicable                              |
+
+---
+
+## Note:
+
+- Drive Mode Switch Input is 48V B- (GND Supply).
+- Throttle and Brake POT Gnd supply is to be connected to 48V B- (GND Supply).
+- Use Relay to give 12V supply for REVERSE Lamp. Since Output from Drive Switch is also 48V GND.
+
+---
+
+## 6 Pin Motor Encoder Connector Pin Details
+
+| Pin Details | Pin Descriptions        |
+| ----------- | ----------------------- |
+| 1           | Encoder Power Supply, 5V|
+| 2           | Motor Thermistor        |
+| 3           | Encoder Sine            |
+| 4           | Encoder Cosine          |
+| 5           | Encoder GND             |
+| 6           | Encoder Cable Shield    |
+`;
+
 
 export const matelEvKnowledgeBase: StoredFile[] = [
   {
@@ -781,5 +837,11 @@ export const matelEvKnowledgeBase: StoredFile[] = [
     content: pcanToolContent,
     size: pcanToolContent.length,
     lastModified: Date.now() - 4,
+  },
+  {
+    name: 'Virya-Gen2-Pin-Position.md',
+    content: viryaGen2PinoutContent,
+    size: viryaGen2PinoutContent.length,
+    lastModified: Date.now() - 6,
   }
 ];
