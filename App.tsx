@@ -24,6 +24,8 @@ const languageOptions = {
     'or-IN': 'Odia (ଓଡ଼ିଆ)',
 };
 
+type DeviceView = 'desktop' | 'tablet' | 'mobile';
+
 const App: React.FC = () => {
   const { user, view, setView, login, signup, logout, authError, isAuthLoading } = useAuth();
 
@@ -45,6 +47,7 @@ const App: React.FC = () => {
         return 'en-US';
     }
   });
+  const [deviceView, setDeviceView] = useState<DeviceView>('desktop');
 
   const handleFileError = useCallback((errorMessage: string) => {
     console.error(`File Error: ${errorMessage}`);
@@ -183,10 +186,64 @@ const App: React.FC = () => {
     }
     return <IntroPage onStart={() => setView('auth')} />;
   }
+  
+  const getDeviceFrameClasses = () => {
+    switch (deviceView) {
+        case 'mobile':
+            return 'w-[375px] h-[95%] max-w-full max-h-full flex flex-col bg-white shadow-2xl rounded-3xl border-8 border-gray-800 p-1 box-content transition-all duration-300 relative overflow-hidden';
+        case 'tablet':
+            return 'w-[768px] h-[95%] max-w-full max-h-full flex flex-col bg-white shadow-2xl rounded-3xl border-8 border-gray-800 p-1 box-content transition-all duration-300 relative overflow-hidden';
+        default: // desktop
+            return 'w-full h-full flex flex-col bg-white shadow-lg rounded-lg overflow-hidden';
+    }
+  };
+  
+  const getDeviceNotch = () => {
+      if (deviceView === 'desktop') return null;
+      return (
+        <div className={`absolute top-0 left-1/2 -translate-x-1/2 bg-gray-800 rounded-b-xl z-10 ${deviceView === 'mobile' ? 'w-28 h-5' : 'w-36 h-6'}`}></div>
+      );
+  }
+
+  const DeviceViewSelector = () => (
+      <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-600">View:</span>
+          <div className="flex items-center gap-1 p-0.5 bg-gray-200 rounded-md">
+              <button 
+                  onClick={() => setDeviceView('desktop')} 
+                  title="Desktop View" 
+                  aria-pressed={deviceView === 'desktop'}
+                  className={`p-1.5 rounded-md transition-colors ${deviceView === 'desktop' ? 'bg-white shadow-sm' : 'hover:bg-gray-300'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+              </button>
+              <button 
+                  onClick={() => setDeviceView('tablet')} 
+                  title="Tablet View" 
+                  aria-pressed={deviceView === 'tablet'}
+                  className={`p-1.5 rounded-md transition-colors ${deviceView === 'tablet' ? 'bg-white shadow-sm' : 'hover:bg-gray-300'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+              </button>
+              <button 
+                  onClick={() => setDeviceView('mobile')} 
+                  title="Mobile View" 
+                  aria-pressed={deviceView === 'mobile'}
+                  className={`p-1.5 rounded-md transition-colors ${deviceView === 'mobile' ? 'bg-white shadow-sm' : 'hover:bg-gray-300'}`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75A2.25 2.25 0 0015.75 1.5h-2.25" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 18h3" />
+                  </svg>
+              </button>
+          </div>
+      </div>
+  );
 
   return (
-    <div className="h-screen w-screen bg-white flex flex-col font-sans text-gray-900">
-      <header className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center flex-shrink-0">
+    <div className="h-screen w-screen bg-gray-100 flex flex-col font-sans text-gray-900">
+      <header className="p-4 border-b border-gray-200 bg-white flex justify-between items-center flex-shrink-0 z-10">
         <h1 className="text-xl font-bold text-gray-800">Service Engineer Assistant</h1>
         <div className="flex items-center gap-4">
             <div className="flex items-center gap-4 text-sm text-gray-600">
@@ -198,6 +255,11 @@ const App: React.FC = () => {
                 )}
                 <div className="h-6 w-px bg-gray-300"></div>
                 {knowledgeBase && knowledgeBase.fileCount > 0 && <span className="max-w-xs truncate" title={`${knowledgeBase.fileCount} files loaded`}>Knowledge Base: {knowledgeBase.fileCount} file(s) loaded</span>}
+                <div className="h-6 w-px bg-gray-300"></div>
+
+                <DeviceViewSelector />
+                
+                <div className="h-6 w-px bg-gray-300"></div>
                 <div className="flex items-center gap-2">
                     <label htmlFor="language-select-header" className="text-sm font-medium text-gray-600">Language:</label>
                     <div className="relative">
@@ -220,16 +282,19 @@ const App: React.FC = () => {
             </div>
         </div>
       </header>
-      <div className="flex-1 flex flex-col min-h-0">
-          <ChatWindow 
-              messages={messages}
-              onSendMessage={handleSendMessage}
-              isLoading={isLoading}
-              selectedLanguage={language}
-              onSuggestionClick={handleSuggestionClick}
-              onClarificationRequest={handleClarificationRequest}
-          />
-      </div>
+      <main className="flex-1 flex flex-col items-center justify-center min-h-0 p-4">
+          <div className={getDeviceFrameClasses()}>
+              {getDeviceNotch()}
+              <ChatWindow 
+                  messages={messages}
+                  onSendMessage={handleSendMessage}
+                  isLoading={isLoading}
+                  selectedLanguage={language}
+                  onSuggestionClick={handleSuggestionClick}
+                  onClarificationRequest={handleClarificationRequest}
+              />
+          </div>
+      </main>
     </div>
   );
 };
