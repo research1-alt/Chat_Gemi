@@ -15,7 +15,7 @@ const IntroPage: React.FC<IntroPageProps> = ({ onStart }) => {
                 <path d="M16.5 3.5a1.5 1.5 0 010 3h-3.5a1.5 1.5 0 010-3h3.5z" />
             </svg>
         </div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-3">Service Engineer AI Assistant</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-3">OSM Service Intern</h1>
         <p className="text-gray-600 mb-8 max-w-lg">
           Your intelligent partner in the field. Upload technical manuals, troubleshooting guides, or entire project folders. Then, ask questions in natural language to get step-by-step solutions based on your documents.
         </p>

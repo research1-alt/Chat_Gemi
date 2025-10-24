@@ -43,7 +43,7 @@ export async function getChatbotResponse(
   
   const languageName = languageMap[language] || 'English';
 
-  const systemInstruction = `You are an expert AI assistant for service engineers.
+  const systemInstruction = `You are an expert AI assistant, the OSM Service Intern.
 Your function is to act as an intelligent troubleshooting guide based on a knowledge base provided from one or more documents.
 You MUST respond in ${languageName}.
 

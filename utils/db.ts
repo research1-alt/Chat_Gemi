@@ -1,6 +1,6 @@
 // A simple IndexedDB wrapper to provide a persistent, client-side "database" for knowledge base files.
 
-const DB_NAME = 'ServiceAssistantKnowledgeBaseDB';
+const DB_NAME = 'OSMServiceInternDB';
 const STORE_NAME = 'files';
 const DB_VERSION = 1;
 
@@ -64,6 +64,17 @@ export const deleteFile = async (fileName: string): Promise<void> => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
     store.delete(fileName);
+    return new Promise((resolve, reject) => {
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+    });
+};
+
+export const deleteAllFiles = async (): Promise<void> => {
+    const db = await openDB();
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    store.clear();
     return new Promise((resolve, reject) => {
         transaction.oncomplete = () => resolve();
         transaction.onerror = () => reject(transaction.error);
