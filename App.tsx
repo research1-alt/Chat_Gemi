@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ChatWindow from './components/ChatWindow';
 import IntroPage from './components/IntroPage';
@@ -57,8 +58,6 @@ const App: React.FC = () => {
   const [ratingStatus, setRatingStatus] = useState<'idle' | 'success'>('idle');
 
   const [feedbackText, setFeedbackText] = useState('');
-  const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
-  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleFileError = useCallback((errorMessage: string) => {
@@ -239,6 +238,13 @@ const App: React.FC = () => {
     }
   }, [loadKnowledgeBase, handleFileError]);
 
+  const handleRefreshPage = useCallback(() => {
+    if (window.confirm("Are you sure you want to refresh? This will clear your current chat history.")) {
+        localStorage.removeItem('app-messages');
+        window.location.reload();
+    }
+  }, []);
+
   const handleRatingSubmit = useCallback(async () => {
     if (rating === 0 || !user) return;
     setIsRatingSubmitting(true);
@@ -262,34 +268,19 @@ const App: React.FC = () => {
   }, [rating, user]);
 
 
-  const handleFeedbackSubmit = useCallback(async () => {
+  const handleFeedbackSubmit = useCallback(() => {
     if (!feedbackText.trim() || !user) return;
-    
-    setIsFeedbackSubmitting(true);
-    setFeedbackStatus('idle');
 
-    await new Promise(res => setTimeout(res, 500)); // Simulate network delay
+    const recipientEmail = "arvindbutola143@gmail.com";
+    const subject = `Feedback from OSM Service Intern User: ${user.name}`;
+    const body = `User Name: ${user.name}\nUser Email: ${user.email}\n\nFeedback:\n${feedbackText}`;
 
-    try {
-        const feedbacks = JSON.parse(localStorage.getItem('app-feedback') || '[]');
-        const newFeedback = {
-            text: feedbackText,
-            user: user.email,
-            timestamp: new Date().toISOString(),
-        };
-        feedbacks.push(newFeedback);
-        localStorage.setItem('app-feedback', JSON.stringify(feedbacks));
-        
-        setFeedbackStatus('success');
-        setFeedbackText('');
-        setTimeout(() => setFeedbackStatus('idle'), 3000);
-    } catch (error) {
-        console.error("Failed to save feedback:", error);
-        setFeedbackStatus('error');
-    } finally {
-        setIsFeedbackSubmitting(false);
-    }
+    const mailtoLink = `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    window.location.href = mailtoLink;
+    setFeedbackText('');
   }, [feedbackText, user]);
+
 
   if (!user) {
     if (view === 'auth') {
@@ -368,138 +359,147 @@ const App: React.FC = () => {
           {getDeviceNotch()}
           <header className="p-4 border-b border-gray-200 bg-white flex justify-between items-center flex-shrink-0 z-20">
             <h1 className="text-xl font-bold text-gray-800">OSM Service Intern</h1>
-            <div className="relative">
-                <button 
-                    onClick={() => setIsMenuOpen(prev => !prev)} 
-                    className="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
-                    aria-label="Open menu"
-                    aria-haspopup="true"
-                    aria-expanded={isMenuOpen}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-                {isMenuOpen && (
-                    <div ref={menuRef} className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-30 flex flex-col gap-y-4 text-sm">
-                        
-                        {/* User Info Section */}
-                        {user && (
-                            <div className="border-b border-gray-200 pb-4 flex flex-col items-start">
-                                <span className="font-semibold text-gray-800 text-base">Welcome, {user.name}</span>
-                            </div>
-                        )}
-
-                        {/* Knowledge Base Section */}
-                        <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Knowledge Base</h3>
-                            <div className="text-gray-600">
-                                {knowledgeBase && getAllFiles.length > 0
-                                    ? `${knowledgeBase.fileCount} custom file(s) loaded.`
-                                    : "Default knowledge base loaded."
-                                }
-                            </div>
-                            <FileUpload onFilesStored={handleFilesStored} onError={handleFileError} />
-                            {knowledgeBase && getAllFiles.length > 0 && (
-                                 <button onClick={handleClearKnowledgeBase} className="w-full text-left text-sm font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors">Clear Knowledge Base</button>
+            <div className="flex items-center gap-1">
+                <div className="relative">
+                    <button 
+                        onClick={() => setIsMenuOpen(prev => !prev)} 
+                        className="p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
+                        aria-label="Open menu"
+                        aria-haspopup="true"
+                        aria-expanded={isMenuOpen}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    {isMenuOpen && (
+                        <div ref={menuRef} className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-30 flex flex-col gap-y-4 text-sm max-h-[80vh] overflow-y-auto">
+                            
+                            {/* User Info Section */}
+                            {user && (
+                                <div className="border-b border-gray-200 pb-4 flex flex-col items-start">
+                                    <span className="font-semibold text-gray-800 text-base">Welcome, {user.name}</span>
+                                </div>
                             )}
-                        </div>
 
-                        {/* View Options Section */}
-                        <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Device View</h3>
-                            <DeviceViewSelector />
-                        </div>
-                        
-                        {/* Language Section */}
-                        <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Language</h3>
-                            <div className="flex items-center justify-between">
-                                <label htmlFor="language-select-menu" className="font-medium text-gray-700">Interface Language</label>
-                                <div className="relative">
-                                    <select
-                                        id="language-select-menu"
-                                        value={language}
-                                        onChange={(e) => handleLanguageChange(e.target.value)}
-                                        className="appearance-none rounded-md border border-gray-300 bg-white py-1 pl-2 pr-7 text-gray-800 shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
-                                        aria-label="Select language"
-                                    >
-                                        {Object.entries(languageOptions).map(([code, name]) => (
-                                            <option key={code} value={code}>{name}</option>
-                                        ))}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                                        <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            {/* Knowledge Base Section */}
+                            <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Knowledge Base</h3>
+                                <div className="text-gray-600">
+                                    {knowledgeBase && getAllFiles.length > 0
+                                        ? `${knowledgeBase.fileCount} custom file(s) loaded.`
+                                        : "Default knowledge base loaded."
+                                    }
+                                </div>
+                                <FileUpload onFilesStored={handleFilesStored} onError={handleFileError} />
+                                {knowledgeBase && getAllFiles.length > 0 && (
+                                     <button onClick={handleClearKnowledgeBase} className="w-full text-left text-sm font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors">Clear Knowledge Base</button>
+                                )}
+                            </div>
+
+                            {/* View Options Section */}
+                            <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Device View</h3>
+                                <DeviceViewSelector />
+                            </div>
+                            
+                            {/* Language Section */}
+                            <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Language</h3>
+                                <div className="flex items-center justify-between">
+                                    <label htmlFor="language-select-menu" className="font-medium text-gray-700">Interface Language</label>
+                                    <div className="relative">
+                                        <select
+                                            id="language-select-menu"
+                                            value={language}
+                                            onChange={(e) => handleLanguageChange(e.target.value)}
+                                            className="appearance-none rounded-md border border-gray-300 bg-white py-1 pl-2 pr-7 text-gray-800 shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                                            aria-label="Select language"
+                                        >
+                                            {Object.entries(languageOptions).map(([code, name]) => (
+                                                <option key={code} value={code}>{name}</option>
+                                            ))}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                            <svg className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Rating Section */}
-                        <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Rate Us</h3>
-                            <div className="flex justify-center items-center gap-1">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                        key={star}
-                                        onClick={() => ratingStatus !== 'success' && setRating(star)}
-                                        onMouseEnter={() => ratingStatus !== 'success' && setHoverRating(star)}
-                                        onMouseLeave={() => setHoverRating(0)}
-                                        className="focus:outline-none"
-                                        aria-label={`Rate ${star} out of 5 stars`}
-                                        disabled={ratingStatus === 'success'}
+                            {/* Rating Section */}
+                            <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Rate Us</h3>
+                                <div className="flex justify-center items-center gap-1">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            onClick={() => ratingStatus !== 'success' && setRating(star)}
+                                            onMouseEnter={() => ratingStatus !== 'success' && setHoverRating(star)}
+                                            onMouseLeave={() => setHoverRating(0)}
+                                            className="focus:outline-none"
+                                            aria-label={`Rate ${star} out of 5 stars`}
+                                            disabled={ratingStatus === 'success'}
+                                        >
+                                            <Star filled={(hoverRating || rating) >= star} />
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="flex items-center justify-between mt-2">
+                                     <div className="h-5">
+                                        {ratingStatus === 'success' && <p className="text-xs text-green-600">Thanks for your rating!</p>}
+                                    </div>
+                                    <button 
+                                        onClick={handleRatingSubmit}
+                                        disabled={isRatingSubmitting || rating === 0 || ratingStatus === 'success'}
+                                        className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                                     >
-                                        <Star filled={(hoverRating || rating) >= star} />
+                                        {ratingStatus === 'success' ? 'Submitted' : (isRatingSubmitting ? 'Submitting...' : 'Submit Rating')}
                                     </button>
-                                ))}
-                            </div>
-                            <div className="flex items-center justify-between mt-2">
-                                 <div className="h-5">
-                                    {ratingStatus === 'success' && <p className="text-xs text-green-600">Thanks for your rating!</p>}
                                 </div>
-                                <button 
-                                    onClick={handleRatingSubmit}
-                                    disabled={isRatingSubmitting || rating === 0 || ratingStatus === 'success'}
-                                    className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                >
-                                    {ratingStatus === 'success' ? 'Submitted' : (isRatingSubmitting ? 'Submitting...' : 'Submit Rating')}
+                            </div>
+
+                            {/* Feedback Section */}
+                            <div className="border-b border-gray-200 pb-4 flex flex-col gap-3">
+                                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Feedback</h3>
+                                <textarea 
+                                    value={feedbackText}
+                                    onChange={(e) => setFeedbackText(e.target.value)}
+                                    placeholder="Share your feedback to help us improve..."
+                                    className="w-full h-20 p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                    aria-label="Feedback input"
+                                />
+                                <div className="flex items-center justify-end">
+                                    <button 
+                                        onClick={handleFeedbackSubmit}
+                                        disabled={!feedbackText.trim()}
+                                        className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    >
+                                        Send Feedback
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Actions Section */}
+                            <div className="flex flex-col gap-2 pt-2">
+                                <button onClick={handleRefreshPage} className="w-full text-left text-sm font-medium text-gray-700 hover:bg-gray-100 p-2 rounded-md transition-colors flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 110 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>Refresh Page</span>
                                 </button>
+                                {user && (
+                                    <button onClick={handleLogout} className="w-full text-left text-sm font-medium text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors flex items-center gap-2">
+                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+                                        </svg>
+                                        <span>Logout</span>
+                                    </button>
+                                )}
                             </div>
                         </div>
-
-                        {/* Feedback Section */}
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Feedback</h3>
-                            <textarea 
-                                value={feedbackText}
-                                onChange={(e) => setFeedbackText(e.target.value)}
-                                placeholder="Share your feedback about the assistant..."
-                                className="w-full h-20 p-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
-                                aria-label="Feedback input"
-                            />
-                            <div className="flex items-center justify-between">
-                                <div className="h-5">
-                                    {feedbackStatus === 'success' && <p className="text-xs text-green-600">Feedback submitted. Thank you!</p>}
-                                    {feedbackStatus === 'error' && <p className="text-xs text-red-600">Could not submit feedback.</p>}
-                                </div>
-                                <button 
-                                    onClick={handleFeedbackSubmit}
-                                    disabled={isFeedbackSubmitting || !feedbackText.trim()}
-                                    className="px-3 py-1.5 rounded-md text-sm font-medium transition-colors bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                                >
-                                    {isFeedbackSubmitting ? 'Submitting...' : 'Submit'}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Logout Section */}
-                        {user && (
-                            <div className="border-t border-gray-200 pt-4">
-                                 <button onClick={handleLogout} className="w-full text-left text-sm font-medium text-red-600 hover:bg-red-50 p-2 rounded-md transition-colors">Logout</button>
-                            </div>
-                        )}
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
           </header>
           <div className="flex-1 min-h-0">
